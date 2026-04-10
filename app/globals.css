@@ -1,0 +1,208 @@
+@import "tailwindcss";
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #071518;
+  color: #ffffff;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* GPU-hint для секций — не блокируем рендер до GSAP */
+section {
+  will-change: transform, opacity;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+
+/* Кнопка */
+button {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  cursor: pointer;
+}
+button:hover  { opacity: 0.87; transform: translateY(-1px) scale(1.01); }
+button:active { transform: translateY(0) scale(0.99); }
+
+/* Контактные ссылки */
+a[href^="https://t.me"],
+a[href^="mailto:"],
+a[href^="tel:"] {
+  transition: opacity 0.18s ease;
+}
+a[href^="https://t.me"]:hover,
+a[href^="mailto:"]:hover,
+a[href^="tel:"]:hover {
+  opacity: 0.7;
+}
+
+/* Скроллбар */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #071518; }
+::-webkit-scrollbar-thumb {
+  background: rgba(10,186,181,0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(10,186,181,0.55); }
+
+/* Animated glowing border — traveling light line on cards */
+@keyframes glow-border-travel {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -5090; }
+}
+
+/* Corner dot — sharp bright flash when beam arrives, then dims */
+@keyframes corner-dot-pulse {
+  0%   { opacity: 1;    transform: scale(1.8); }
+  7%   { opacity: 0.3;  transform: scale(1);   }
+  100% { opacity: 0.3;  transform: scale(1);   }
+}
+
+/* ──────────────────────────────────────────────
+   Timeline "О компании" — beam travels dot-to-dot
+   Cycle: 8s total
+     0%–32%  beam 1 (dot1→dot2)
+     32%–39% dot2 flash + beam1 fade
+     39%–70% beam 2 (dot2→dot3)
+     70%–77% dot3 flash + beam2 fade
+     77%–100% pause
+   ────────────────────────────────────────────── */
+@keyframes timeline-beam-1 {
+  0%   { transform: scaleX(0); opacity: 1; }
+  32%  { transform: scaleX(1); opacity: 1; }
+  38%  { transform: scaleX(1); opacity: 0; }
+  39%  { transform: scaleX(0); opacity: 0; }
+  100% { transform: scaleX(0); opacity: 0; }
+}
+@keyframes timeline-beam-2 {
+  0%, 38%  { transform: scaleX(0); opacity: 0; }
+  39%      { transform: scaleX(0); opacity: 1; }
+  70%      { transform: scaleX(1); opacity: 1; }
+  76%      { transform: scaleX(1); opacity: 0; }
+  77%      { transform: scaleX(0); opacity: 0; }
+  100%     { transform: scaleX(0); opacity: 0; }
+}
+@keyframes timeline-dot-1 {
+  0%   { box-shadow: 0 0 0 6px rgba(10,186,181,0.7), 0 0 18px 6px rgba(10,186,181,0.55); transform: scale(1.5); }
+  10%  { box-shadow: none; transform: scale(1); }
+  100% { box-shadow: none; transform: scale(1); }
+}
+@keyframes timeline-dot-2 {
+  0%, 31%  { box-shadow: none; transform: scale(1); }
+  32%      { box-shadow: 0 0 0 6px rgba(10,186,181,0.7), 0 0 18px 6px rgba(10,186,181,0.55); transform: scale(1.5); }
+  42%      { box-shadow: none; transform: scale(1); }
+  100%     { box-shadow: none; transform: scale(1); }
+}
+@keyframes timeline-dot-3 {
+  0%, 69%  { box-shadow: none; transform: scale(1); }
+  70%      { box-shadow: 0 0 0 6px rgba(10,186,181,0.7), 0 0 18px 6px rgba(10,186,181,0.55); transform: scale(1.5); }
+  80%      { box-shadow: none; transform: scale(1); }
+  100%     { box-shadow: none; transform: scale(1); }
+}
+
+/* ServicesExternal — vertical traveling beams (dot1→dot2→dot3→dot4), 5s cycle
+   beam1: 0%–22% grow, 26% fade
+   beam2: 27%–49% grow, 53% fade
+   beam3: 54%–76% grow, 80% fade
+   pause: 81%–100%
+   ─────────────────────────────────────── */
+@keyframes ext-vbeam-1 {
+  0%   { transform: scaleY(0); opacity: 1; }
+  22%  { transform: scaleY(1); opacity: 1; }
+  26%  { transform: scaleY(1); opacity: 0; }
+  27%  { transform: scaleY(0); opacity: 0; }
+  100% { transform: scaleY(0); opacity: 0; }
+}
+@keyframes ext-vbeam-2 {
+  0%, 26%  { transform: scaleY(0); opacity: 0; }
+  27%      { transform: scaleY(0); opacity: 1; }
+  49%      { transform: scaleY(1); opacity: 1; }
+  53%      { transform: scaleY(1); opacity: 0; }
+  54%      { transform: scaleY(0); opacity: 0; }
+  100%     { transform: scaleY(0); opacity: 0; }
+}
+@keyframes ext-vbeam-3 {
+  0%, 53%  { transform: scaleY(0); opacity: 0; }
+  54%      { transform: scaleY(0); opacity: 1; }
+  76%      { transform: scaleY(1); opacity: 1; }
+  80%      { transform: scaleY(1); opacity: 0; }
+  81%      { transform: scaleY(0); opacity: 0; }
+  100%     { transform: scaleY(0); opacity: 0; }
+}
+@keyframes ext-dot-1 {
+  0%   { box-shadow: 0 0 0 5px rgba(10,186,181,0.65), 0 0 16px 5px rgba(10,186,181,0.5); transform: scale(1.45); }
+  9%   { box-shadow: none; transform: scale(1); }
+  100% { box-shadow: none; transform: scale(1); }
+}
+@keyframes ext-dot-2 {
+  0%, 21%  { box-shadow: none; transform: scale(1); }
+  22%      { box-shadow: 0 0 0 5px rgba(10,186,181,0.65), 0 0 16px 5px rgba(10,186,181,0.5); transform: scale(1.45); }
+  31%      { box-shadow: none; transform: scale(1); }
+  100%     { box-shadow: none; transform: scale(1); }
+}
+@keyframes ext-dot-3 {
+  0%, 48%  { box-shadow: none; transform: scale(1); }
+  49%      { box-shadow: 0 0 0 5px rgba(10,186,181,0.65), 0 0 16px 5px rgba(10,186,181,0.5); transform: scale(1.45); }
+  58%      { box-shadow: none; transform: scale(1); }
+  100%     { box-shadow: none; transform: scale(1); }
+}
+@keyframes ext-dot-4 {
+  0%, 75%  { box-shadow: none; transform: scale(1); }
+  76%      { box-shadow: 0 0 0 5px rgba(10,186,181,0.65), 0 0 16px 5px rgba(10,186,181,0.5); transform: scale(1.45); }
+  85%      { box-shadow: none; transform: scale(1); }
+  100%     { box-shadow: none; transform: scale(1); }
+}
+
+/* Case 1C — 3D isometric box float */
+@keyframes case1c-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-14px); }
+}
+/* Case 1C — corner dots pulse */
+@keyframes case1c-pulse {
+  0%, 100% { opacity: 0.4; r: 4; }
+  50%       { opacity: 1;   r: 6; }
+}
+/* Case 1C — orbit ring traveling dash */
+@keyframes case1c-orbit {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -314; }
+}
+/* Case 1C — rising particles */
+@keyframes case1c-rise {
+  0%   { transform: translateY(0px);   opacity: 0.8; }
+  100% { transform: translateY(-55px); opacity: 0; }
+}
+
+
+/* ── Spinning border beam (hover) — conic-gradient rotating light ── */
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes border-spin {
+  to { --border-angle: 360deg; }
+}
+
+/* Lenis — блокируем стандартный momentum scroll на iOS */
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
