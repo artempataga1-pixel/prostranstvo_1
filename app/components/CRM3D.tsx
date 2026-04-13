@@ -137,7 +137,6 @@ export default function CRM3D() {
       const NUM_SIGNALS = 9;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const signals: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const sigData: { ringIdx: number; angle: number; speed: number; color: number }[] = [];
 
       for (let i = 0; i < NUM_SIGNALS; i++) {

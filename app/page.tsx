@@ -1,5 +1,14 @@
+"use client";
 // Figma node: 2044:7 "Титульник 3" — file z3AxyWDY3tHo7PYT1vRUF4
 // Design base: 1920 × 1080 px
+import { useState } from "react";
+
+// Helper: не рендерит <img> когда src пустая строка (избегаем React-предупреждения)
+function Img({ src, alt = "", ...props }: React.ImgHTMLAttributes<HTMLImageElement>) {
+  if (!src) return null;
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={src} alt={alt} {...props} />;
+}
 import InfinityAnimation from "./components/InfinityAnimation";
 import FloatingShapes from "./components/FloatingShapes";
 import ShaderBackground from "./components/ShaderBackground";
@@ -11,6 +20,7 @@ import NeuralNet3D from "./components/NeuralNet3D";
 import CRM3D from "./components/CRM3D";
 import Warehouse3D from "./components/Warehouse3D";
 import OrbitalCasesTimeline from "./components/OrbitalCasesTimeline";
+import ContactsSection from "./components/ContactsSection";
 
 const BG = "/bg.png";
 const INFINITY_IMG = "/infinity.png";
@@ -71,7 +81,7 @@ const sectionStyle = {
   position: "relative" as const,
   width: "100%",
   minHeight: "100svh",
-  overflow: "hidden",
+  overflow: "clip",
 };
 
 function HeroSection() {
@@ -83,8 +93,7 @@ function HeroSection() {
       }}
     >
       {/* Background */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+            <Img
         alt=""
         src={BG}
         style={{
@@ -97,32 +106,32 @@ function HeroSection() {
         }}
       />
 
-      {/* Title: left 38px, top 60px, 280px font, tracking -9.8px */}
+      {/* Title */}
       <div
+        className="hero-title"
         style={{
           position: "absolute",
-          left: "clamp(18px, 1.98vw, 38px)",
-          top: "clamp(24px, 5.56vh, 60px)",
-          maxWidth: "calc(100vw - 36px)",
+          left: "50%",
+          transform: "translateX(-50%)",
+          top: "clamp(120px, 22vh, 260px)",
+          width: "min(calc(100vw - 36px), 1400px)",
           fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
           fontWeight: 400,
-          fontSize: "clamp(54px, 14.583vw, 280px)",
-          lineHeight: 0.8,
-          letterSpacing: "clamp(-9.8px, -0.51vw, -2.5px)",
+          fontSize: "clamp(48px, 13vw, 250px)",
+          lineHeight: 0.85,
+          letterSpacing: "clamp(-8px, -0.45vw, -2px)",
           color: "#ffffff",
-          display: "flex",
-          flexWrap: "wrap",
+          textAlign: "center",
         }}
       >
-        <span>PRO</span>
-        <span>странство</span>
+        PROстранство
       </div>
 
       {/* Sphere — static SVG from Figma */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+            <Img
         alt=""
         src="/sphere.svg"
+        className="hero-sphere-img"
         style={{
           position: "absolute",
           left: "50%",
@@ -145,7 +154,7 @@ function HeroSection() {
         style={{
           position: "absolute",
           left: 0,
-          top: "clamp(430px, 62.59vh, 676px)",
+          top: "clamp(570px, 73vh, 790px)",
           bottom: 0,
           width: "100%",
           backdropFilter: "blur(8px)",
@@ -156,20 +165,21 @@ function HeroSection() {
         }}
       />
 
-      {/* Subtitle: centered, top 364px, width 1132px, 65px font */}
+      {/* Subtitle */}
       <p
+        className="hero-subtitle"
         style={{
           position: "absolute",
           left: "50%",
-          top: "clamp(214px, 33.7vh, 364px)",
+          top: "clamp(370px, 52vh, 560px)",
           transform: "translateX(-50%)",
-          width: "min(1132px, calc(100vw - 48px))",
+          width: "min(1000px, calc(100vw - 48px))",
           fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
           fontWeight: 400,
-          fontSize: "clamp(28px, 3.385vw, 65px)",
-          lineHeight: 1,
-          letterSpacing: "clamp(-2.275px, -0.12vw, -0.8px)",
-          color: "#ffffff",
+          fontSize: "clamp(22px, 2.9vw, 56px)",
+          lineHeight: 1.1,
+          letterSpacing: "clamp(-1.8px, -0.1vw, -0.5px)",
+          color: "rgba(255,255,255,0.9)",
           textAlign: "center",
         }}
       >
@@ -178,7 +188,86 @@ function HeroSection() {
         в управляемую модель роста
       </p>
 
+      {/* Buttons */}
+      <style>{`
+        .hero-btn-cases {
+          background: rgba(7,21,24,0.78);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border: 1.5px solid rgba(255,255,255,0.55);
+          color: #ffffff;
+          border-radius: 100px;
+          cursor: pointer;
+          font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+          font-weight: 500;
+          letter-spacing: -0.02em;
+          text-decoration: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          transition: box-shadow 0.2s ease, transform 0.2s ease, background 0.2s ease;
+          white-space: nowrap;
+        }
+        .hero-btn-cases:hover {
+          background: rgba(255,255,255,0.12);
+          box-shadow: 0 0 0 2px rgba(255,255,255,0.7), 0 0 40px rgba(255,255,255,0.45), 0 8px 32px rgba(0,0,0,0.2);
+          transform: translateY(-2px);
+        }
+        .hero-btn-form {
+          background: rgba(7,21,24,0.78);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border: 1.5px solid rgba(10,186,181,0.75);
+          color: #ffffff;
+          border-radius: 100px;
+          cursor: pointer;
+          font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+          font-weight: 500;
+          letter-spacing: -0.02em;
+          text-decoration: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          transition: box-shadow 0.2s ease, transform 0.2s ease, background 0.2s ease;
+          white-space: nowrap;
+        }
+        .hero-btn-form:hover {
+          background: rgba(10,186,181,0.18);
+          box-shadow: 0 0 0 2px rgba(10,186,181,0.9), 0 0 40px rgba(10,186,181,0.6), 0 8px 32px rgba(10,186,181,0.3);
+          transform: translateY(-2px);
+        }
+      `}</style>
       <div
+        className="hero-cta-row"
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "clamp(510px, 66vh, 730px)",
+          transform: "translateX(-50%)",
+          display: "flex",
+          gap: "clamp(10px, 1.04vw, 20px)",
+          alignItems: "center",
+        }}
+      >
+        <a
+          href="#cases"
+          className="hero-btn-cases"
+          style={{ fontSize: "clamp(14px, 1.04vw, 20px)", padding: "clamp(13px, 1.4vh, 20px) clamp(28px, 2.3vw, 44px)" }}
+        >
+          Смотреть кейсы ↓
+        </a>
+        <a
+          href="/form"
+          className="hero-btn-form"
+          style={{ fontSize: "clamp(14px, 1.04vw, 20px)", padding: "clamp(13px, 1.4vh, 20px) clamp(28px, 2.3vw, 44px)" }}
+        >
+          Оставить заявку →
+        </a>
+      </div>
+
+      {/* Infinity sign — mix-blend-screen как в Figma */}
+      <div
+        className="hero-infinity"
         style={{
           position: "absolute",
           left: "50%",
@@ -186,9 +275,18 @@ function HeroSection() {
           transform: "translateX(-50%)",
           width: "clamp(180px, 13.073vw, 251px)",
           height: "clamp(92px, 11.852vh, 128px)",
+          mixBlendMode: "screen",
         }}
       >
-        <InfinityAnimation />
+        <div style={{ position: "relative", width: "100%", height: "100%" }}>
+          <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
+                        <Img
+              alt=""
+              src="/infinity.png"
+              style={{ position: "absolute", width: "206.91%", height: "405.54%", left: "-52.74%", top: "-148.71%", maxWidth: "none" }}
+            />
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -212,6 +310,7 @@ function WhyChooseUsSection() {
 
   return (
     <section
+      className="section-why"
       style={{
         ...sectionStyle,
         minHeight: "max(100svh, 720px)",
@@ -238,12 +337,13 @@ function WhyChooseUsSection() {
       </h2>
 
       {/* Infinity icon — animated */}
-      <div style={{ position: "absolute", right: "3.125vw", top: "clamp(30px, 5.56vh, 60px)", width: "clamp(60px, 6.09vw, 117px)", height: "clamp(31px, 3.125vw, 60px)", pointerEvents: "none" }}>
+      <div className="why-infinity" style={{ position: "absolute", right: "3.125vw", top: "clamp(30px, 5.56vh, 60px)", width: "clamp(60px, 6.09vw, 117px)", height: "clamp(31px, 3.125vw, 60px)", pointerEvents: "none" }}>
         <InfinityAnimation />
       </div>
 
       {/* Row 1 — Figma: top:374, left:72, gap:12 */}
       <div
+        className="why-cards-row"
         style={{
           position: "absolute",
           top: "clamp(220px, 34.63vh, 374px)",
@@ -289,6 +389,7 @@ function WhyChooseUsSection() {
 
       {/* Row 2 — Figma: top:705, left:72, gap:12 */}
       <div
+        className="why-cards-row"
         style={{
           position: "absolute",
           top: "clamp(420px, 65.28vh, 705px)",
@@ -339,6 +440,7 @@ function GrowthModelSection() {
   const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
   return (
     <section
+      className="section-growth"
       style={{
         ...sectionStyle,
         minHeight: "max(100svh, 840px)",
@@ -374,6 +476,7 @@ function GrowthModelSection() {
 
       {/* Label — Figma: top:60 left:60, 45px */}
       <p
+        className="growth-label"
         style={{
           position: "absolute",
           top: "clamp(30px, 5.56vh, 60px)",
@@ -392,6 +495,7 @@ function GrowthModelSection() {
 
       {/* Heading — Figma: top:153 left:60, 100px, width:1560 */}
       <h2
+        className="growth-title"
         style={{
           position: "absolute",
           top: "clamp(90px, 14.17vh, 153px)",
@@ -411,6 +515,7 @@ function GrowthModelSection() {
 
       {/* Left body — Figma: top:434 left:60, 45px, width:825 */}
       <p
+        className="growth-body-l"
         style={{
           position: "absolute",
           top: "clamp(260px, 40.19vh, 434px)",
@@ -430,6 +535,7 @@ function GrowthModelSection() {
 
       {/* Right body — Figma: top:434 left:calc(50%+15px), 45px, width:825 */}
       <p
+        className="growth-body-r"
         style={{
           position: "absolute",
           top: "clamp(260px, 40.19vh, 434px)",
@@ -449,6 +555,7 @@ function GrowthModelSection() {
 
       {/* Timeline card — Figma: top:736 left:60, 1800×284, borderRadius:30 */}
       <div
+        className="growth-timeline"
         style={{
           position: "absolute",
           top: "clamp(500px, 68.15vh, 736px)",
@@ -608,16 +715,17 @@ function GrowthModelSection() {
 }
 
 // Figma node: 2040:574 "Кейс — Джинсы" — file MOHJ9F1OX9kaB0rKsCZm7i
-const GRAPH_IMG = "https://www.figma.com/api/mcp/asset/9326a26a-a5a0-40bf-9cab-e8fb839e703d";
+const GRAPH_IMG = "/jeans-graph.svg";
 
 // Figma node: 2040:613 "Кейс — скриншот" — file MOHJ9F1OX9kaB0rKsCZm7i
-const OZON_SCREENSHOT_IMG = "https://www.figma.com/api/mcp/asset/50c200b0-8348-43db-9c46-710f38784b3b";
-const OZON_LOGO_IMG = "https://www.figma.com/api/mcp/asset/af975cc0-c858-4e51-ad09-8e301c5bbec8";
+const OZON_SCREENSHOT_IMG = "/figma-assets/ozon-screenshot.jpg";
+const OZON_LOGO_IMG = "/figma-assets/ozon-logo.png";
 
 function CaseRevenueSection() {
   const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
   return (
     <section
+      className="split-section"
       style={{
         ...sectionStyle,
         minHeight: "max(100svh, 760px)",
@@ -686,8 +794,7 @@ function CaseRevenueSection() {
       </p>
 
       {/* Graph — Figma: left:-2130, top:694, 4050×386 */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+            <Img
         alt=""
         src={GRAPH_IMG}
         style={{
@@ -761,6 +868,7 @@ function CaseRevenueSection() {
       {/* Точка Б card — Figma: left:1098, top:356, width:~762, height:290 */}
       <GlowCard
         white
+        className="case-revenue-card-b"
         style={{
           position: "absolute",
           left: "57.19vw",
@@ -799,6 +907,7 @@ function CaseRevenueSection() {
       {/* Точка А card — Figma: left:72, top:572, width:~400, height:319 */}
       <GlowCard
         white
+        className="case-revenue-card-a"
         style={{
           position: "absolute",
           left: "3.75vw",
@@ -835,6 +944,7 @@ function CasesSection() {
   const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
   return (
     <section
+      className="split-section"
       style={{
         ...sectionStyle,
         minHeight: "max(100svh, 760px)",
@@ -975,6 +1085,7 @@ function CaseScreenshotSection() {
   const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
   return (
     <section
+      className="split-section case-screenshot"
       style={{
         ...sectionStyle,
         minHeight: "max(100svh, 760px)",
@@ -1032,8 +1143,7 @@ function CaseScreenshotSection() {
           boxSizing: "border-box",
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+                <Img
           alt=""
           src={OZON_SCREENSHOT_IMG}
           style={{
@@ -1071,8 +1181,7 @@ function CaseScreenshotSection() {
             position: "relative",
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+                    <Img
             alt=""
             src={OZON_LOGO_IMG}
             style={{
@@ -1106,69 +1215,111 @@ function CaseScreenshotSection() {
 }
 
 // Figma node: 2040:72 "Услуги" — file MOHJ9F1OX9kaB0rKsCZm7i
-const SERVICES_VECTOR1_IMG = "https://www.figma.com/api/mcp/asset/6ad25420-8670-447f-9420-a58549e4c918";
-const SERVICES_VECTOR2_IMG = "https://www.figma.com/api/mcp/asset/02e13bc8-0f9e-43a4-aaba-0f128b29c97d";
-const SERVICES_INFINITY_IMG = "https://www.figma.com/api/mcp/asset/cc0ee52d-c431-488c-b750-9108e21bffab";
+const SERVICES_VECTOR1_IMG = "";
+const SERVICES_VECTOR2_IMG = "";
+const SERVICES_INFINITY_IMG = "";
 
 // Figma node: 2040:188 "Услуги — управление кабинетами" — file MOHJ9F1OX9kaB0rKsCZm7i
-const MGMT_ELLIPSE_IMG = "https://www.figma.com/api/mcp/asset/7652132e-b0b1-43bb-9524-6b8a13555aa6";
-const MGMT_GROUP_IMG = "https://www.figma.com/api/mcp/asset/52e5d948-47b7-4b7b-ae44-489196403cc7";
-const MGMT_AVATAR1_IMG = "https://www.figma.com/api/mcp/asset/5b0e0fcc-c881-4788-bf8b-36f7c4891c8b";
-const MGMT_AVATAR2_IMG = "https://www.figma.com/api/mcp/asset/9bb11d47-df05-4789-aef7-0e67c8ed9451";
-const MGMT_AVATAR3_IMG = "https://www.figma.com/api/mcp/asset/5f84ccdc-4bd8-4520-9137-073461a18ff0";
+const MGMT_ELLIPSE_IMG = "/figma-assets/mgmt-ellipse.svg";
+const MGMT_GROUP_IMG = "/figma-assets/mgmt-group.svg";
+const MGMT_AVATAR1_IMG = "/figma-assets/mgmt-avatar1.png"; // Ozon
+const MGMT_AVATAR2_IMG = "/figma-assets/mgmt-avatar2.png"; // WB
+const MGMT_AVATAR3_IMG = "/figma-assets/mgmt-avatar3.png"; // Маркет
 
 // Figma node: 2040:389 "Услуги — Подбор и развитие команды" — file MOHJ9F1OX9kaB0rKsCZm7i
-const TEAM_GRADIENT_IMG = "https://www.figma.com/api/mcp/asset/cdc72523-d2d0-4b52-8a30-8724c84ab820";
-const TEAM_RADAR_IMG = "https://www.figma.com/api/mcp/asset/c8842302-1963-466a-937f-a2087082e2f6";
-const TEAM_DOT1_IMG = "https://www.figma.com/api/mcp/asset/af0d8b0f-b66e-4f93-bcf0-4407ab11d139";
-const TEAM_DOT2_IMG = "https://www.figma.com/api/mcp/asset/768731b5-1dea-449b-a15b-5dced574843b";
+const TEAM_GRADIENT_IMG = "/figma-assets/team-gradient.png";
+const TEAM_RADAR_IMG = "/figma-assets/team-radar.svg";
+const TEAM_DOT1_IMG = "/figma-assets/team-dot1.svg";
+const TEAM_DOT2_IMG = "/figma-assets/team-dot2.svg";
 
 // Figma node: 2040:411 "Услуги — Постоянная работа с командой" — file MOHJ9F1OX9kaB0rKsCZm7i
-const HRTEAM_GRAPH_IMG = "https://www.figma.com/api/mcp/asset/f4b5ffab-4de6-44aa-aec7-1f33cf4fab81";
-const HRTEAM_DOTLINE_IMG = "https://www.figma.com/api/mcp/asset/cc9a37a3-cfb7-41f9-bd57-8d9d8d7e2662";
-const HRTEAM_DOTLINE1_IMG = "https://www.figma.com/api/mcp/asset/8ae30e94-165f-4971-8e35-9033f4372073";
-const HRTEAM_DOTLINE2_IMG = "https://www.figma.com/api/mcp/asset/f2b427c7-c352-4594-8d9a-f8d1f96b8fd3";
+const HRTEAM_GRAPH_IMG = "/figma-assets/hrteam-graph.svg";
+const HRTEAM_DOTLINE_IMG = "/figma-assets/hrteam-dotline.svg";
+const HRTEAM_DOTLINE1_IMG = "/figma-assets/hrteam-dotline1.svg";
+const HRTEAM_DOTLINE2_IMG = "/figma-assets/hrteam-dotline2.svg";
 
 // Figma node: 2040:255 "Услуги — Внешние каналы продаж" — file MOHJ9F1OX9kaB0rKsCZm7i
-const EXT_ELLIPSE_IMG = "https://www.figma.com/api/mcp/asset/7728063a-3954-470a-b0b9-66db9aca5b4f";
-const EXT_GROUP_IMG = "https://www.figma.com/api/mcp/asset/3b520508-80a1-4de8-aff6-76465a45c95e";
-const EXT_STRIP1_IMG = "https://www.figma.com/api/mcp/asset/edd7a7e0-fcb4-48a0-986c-61dc5c429a91";
-const EXT_STRIP2_IMG = "https://www.figma.com/api/mcp/asset/477dc550-6dd7-46bf-a1d0-92c2ddc0541f";
+const EXT_ELLIPSE_IMG = "/figma-assets/ext-ellipse.svg";
+const EXT_GROUP_IMG = "/figma-assets/ext-group.svg";
+const EXT_STRIP1_IMG = "/figma-assets/ext-strip1.png";
+const EXT_STRIP2_IMG = "/figma-assets/ext-strip2.png";
 
 // Figma node: 2040:648 "Услуги — Внедрение AI-агентов" — file MOHJ9F1OX9kaB0rKsCZm7i
-const AI_LOGO_IMG = "https://www.figma.com/api/mcp/asset/56bfe81d-299f-45ca-9cbd-f0903a0a2040";
-const AI_LINE_DOWN_IMG = "https://www.figma.com/api/mcp/asset/2d583f7e-c8c4-4241-abfb-dc6208f281b5";
-const AI_LINE_UP_IMG = "https://www.figma.com/api/mcp/asset/893f42ae-988f-4434-9c96-52269a93bf4c";
+const AI_LOGO_IMG = "";
+const AI_LINE_DOWN_IMG = "";
+const AI_LINE_UP_IMG = "";
 
 // Figma node: 2040:162 "Услуги — аудит кабинета" — no image assets
 
 // Figma node: 2040:326 "Услуги — Подбор новинок" — file MOHJ9F1OX9kaB0rKsCZm7i
-const PODBOR_COVER_INFINITY_IMG = "https://www.figma.com/api/mcp/asset/e0107b1d-a74e-4ea4-bff6-3432fa0e3abb";
-const PODBOR_ELLIPSE_IMG = "https://www.figma.com/api/mcp/asset/e2944961-482a-41d9-959b-7dd8f7dc8250";
-const PODBOR_LINE1_IMG = "https://www.figma.com/api/mcp/asset/7dd9d240-1cce-4c72-a956-5bf4e8f26ad2";
-const PODBOR_LINE2_IMG = "https://www.figma.com/api/mcp/asset/9c18707f-8012-4be2-99c4-c5fba1ab546c";
-const PODBOR_PRO_IMG = "https://www.figma.com/api/mcp/asset/202978aa-1cac-489f-80ed-9ccc0eee9f73";
+const PODBOR_COVER_INFINITY_IMG = "";
+const PODBOR_ELLIPSE_IMG = "";
+const PODBOR_LINE1_IMG = "";
+const PODBOR_LINE2_IMG = "";
+const PODBOR_PRO_IMG = "";
 
 // Figma node: 2040:565 "Кейс — Кресла ВБ" — file MOHJ9F1OX9kaB0rKsCZm7i
-const CHAIRS_WB_SCREENSHOT_IMG = "https://www.figma.com/api/mcp/asset/e5958324-1c72-492a-bf49-155563992769";
-const CHAIRS_WB_LOGO_IMG = "https://www.figma.com/api/mcp/asset/5fbe49b6-940d-4297-b0bf-3bb4b0a606c7";
-const CHAIRS_WB_INFINITY_IMG = "https://www.figma.com/api/mcp/asset/5dbb83d0-d676-4471-a6c3-75481f7492b5";
+const CHAIRS_WB_SCREENSHOT_IMG = "";
+const CHAIRS_WB_LOGO_IMG = "";
+const CHAIRS_WB_INFINITY_IMG = "";
 
 // Figma node: 2040:153 "Кейс — Кресла Ozon" — file MOHJ9F1OX9kaB0rKsCZm7i
-const CHAIRS_SCREENSHOT_IMG = "https://www.figma.com/api/mcp/asset/d9ed9f40-f053-4246-988d-885e53715fe2";
-const CHAIRS_OZON_LOGO_IMG = "https://www.figma.com/api/mcp/asset/2310a995-1f11-4ca3-a5a6-0b692204a2d3";
-const CHAIRS_INFINITY_IMG = "https://www.figma.com/api/mcp/asset/f048dc9a-ce9a-4dbb-8ac8-bf47851c080d";
+const CHAIRS_SCREENSHOT_IMG = "";
+const CHAIRS_OZON_LOGO_IMG = "";
+const CHAIRS_INFINITY_IMG = "";
 
 // Figma node: 2040:531 "Кейс — Кресла" — file MOHJ9F1OX9kaB0rKsCZm7i
-const CHAIRS_GRAPH_IMG = "https://www.figma.com/api/mcp/asset/61e90a6b-b1a4-425b-b78e-7dece2a961d8";
-const CHAIRS_DOT_LINE_L = "https://www.figma.com/api/mcp/asset/40eb90f2-617f-4d31-923a-b7e6df6fc5ce";
-const CHAIRS_DOT_LINE_R = "https://www.figma.com/api/mcp/asset/830806e9-49c5-4517-ac24-0c1894b6b7f3";
-const CHAIRS_ARROW_IMG = "https://www.figma.com/api/mcp/asset/7a728c8d-863d-457d-9645-e9210fff6270";
+const CHAIRS_GRAPH_IMG = "/chairs-graph.svg";
+const CHAIRS_DOT_LINE_L = "";
+const CHAIRS_DOT_LINE_R = "";
+const CHAIRS_ARROW_IMG = "";
 
 // Figma node: 2040:144 "Кейс — сезонный товар, скриншот" — file MOHJ9F1OX9kaB0rKsCZm7i
-const SEASONAL_SCREENSHOT_IMG = "https://www.figma.com/api/mcp/asset/b126f4e2-0480-4875-a957-4334428a3179";
-const SEASONAL_OZON_LOGO_IMG = "https://www.figma.com/api/mcp/asset/4c91ee0c-3559-46be-8890-030f4f6d4af9";
-const SEASONAL_INFINITY_IMG = "https://www.figma.com/api/mcp/asset/3649ab41-c00e-4d35-be51-1f6e615153a8";
+const SEASONAL_SCREENSHOT_IMG = "";
+const SEASONAL_OZON_LOGO_IMG = "";
+const SEASONAL_INFINITY_IMG = "";
+
+function AiVerticalLine({
+  direction,
+  height,
+}: {
+  direction: "down" | "up";
+  height: string;
+}) {
+  const transform =
+    direction === "down" ? "rotate(90deg) scaleY(-1)" : "rotate(-90deg)";
+  const anchor =
+    direction === "down"
+      ? { top: 0, transformOrigin: "top left" as const }
+      : { bottom: 0, transformOrigin: "bottom left" as const };
+  const src = direction === "down" ? AI_LINE_DOWN_IMG : AI_LINE_UP_IMG;
+
+  return (
+    <div style={{ width: 0, height, flexShrink: 0, position: "relative" }}>
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          width: height,
+          overflow: "hidden",
+          transform,
+          ...anchor,
+        }}
+      >
+        <Img
+          alt=""
+          src={src}
+          style={{
+            display: "block",
+            width: "100%",
+            height: "4px",
+            maxWidth: "none",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
 
 // ── КЕЙС: 1С УНФ + ТСД ─────────────────────────────────────────────────────
 
@@ -1182,7 +1333,7 @@ function Case1CIntroSection() {
   ];
 
   return (
-    <section style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#0d1f1f" }}>
+    <section className="split-section" style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#0d1f1f" }}>
       <div style={{ position: "absolute", right: "-8vw", top: "10vh", width: "55vw", height: "55vw", background: "radial-gradient(circle, rgba(10,186,181,0.10) 0%, transparent 65%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", left: "-5vw", bottom: "0", width: "40vw", height: "40vw", background: "radial-gradient(circle, rgba(10,186,181,0.06) 0%, transparent 65%)", pointerEvents: "none" }} />
 
@@ -1204,7 +1355,7 @@ function Case1CIntroSection() {
       </p>
 
       {/* 3D Cube — right */}
-      <div style={{ position: "absolute", right: "clamp(20px, 3vw, 60px)", top: "50%", transform: "translateY(-50%)", width: "clamp(280px, 43vw, 820px)", height: "clamp(280px, 43vw, 820px)", pointerEvents: "none" }}>
+      <div className="split-vis" style={{ position: "absolute", right: "clamp(20px, 3vw, 60px)", top: "50%", transform: "translateY(-50%)", width: "clamp(280px, 43vw, 820px)", height: "clamp(280px, 43vw, 820px)", pointerEvents: "none" }}>
         <Cube3D />
       </div>
 
@@ -1333,7 +1484,7 @@ function CaseAIIntroSection() {
   ];
 
   return (
-    <section style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#0d0f1f" }}>
+    <section className="split-section" style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#0d0f1f" }}>
       <div style={{ position: "absolute", right: "-8vw", top: "10vh", width: "55vw", height: "55vw", background: "radial-gradient(circle, rgba(139,92,246,0.10) 0%, transparent 65%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", left: "-5vw", bottom: "0", width: "40vw", height: "40vw", background: "radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 65%)", pointerEvents: "none" }} />
 
@@ -1365,7 +1516,7 @@ function CaseAIIntroSection() {
       </div>
 
       {/* Original SVG neural network */}
-      <div style={{ position: "absolute", right: "3.125vw", top: "50%", transform: "translateY(-50%)", width: "clamp(260px, 42vw, 780px)", height: "clamp(260px, 42vw, 780px)" }}>
+      <div className="split-vis" style={{ position: "absolute", right: "3.125vw", top: "50%", transform: "translateY(-50%)", width: "clamp(260px, 42vw, 780px)", height: "clamp(260px, 42vw, 780px)" }}>
         <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "100%", height: "100%" }}>
           <defs>
             <filter id="aiGlow"><feGaussianBlur stdDeviation="4" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
@@ -1482,7 +1633,7 @@ function CaseCRMIntroSection() {
   ];
 
   return (
-    <section style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#080f18" }}>
+    <section className="split-section" style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#080f18" }}>
       {/* Glows */}
       <div style={{ position: "absolute", right: "-8vw", top: "10vh", width: "55vw", height: "55vw", background: "radial-gradient(circle, rgba(56,189,248,0.10) 0%, transparent 65%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", left: "-5vw", bottom: "0", width: "40vw", height: "40vw", background: "radial-gradient(circle, rgba(56,189,248,0.05) 0%, transparent 65%)", pointerEvents: "none" }} />
@@ -1505,7 +1656,7 @@ function CaseCRMIntroSection() {
       </p>
 
       {/* 3D CRM rings */}
-      <div style={{ position: "absolute", right: "clamp(20px, 3vw, 60px)", top: "50%", transform: "translateY(-50%)", width: "clamp(280px, 43vw, 820px)", height: "clamp(280px, 43vw, 820px)", pointerEvents: "none" }}>
+      <div className="split-vis" style={{ position: "absolute", right: "clamp(20px, 3vw, 60px)", top: "50%", transform: "translateY(-50%)", width: "clamp(280px, 43vw, 820px)", height: "clamp(280px, 43vw, 820px)", pointerEvents: "none" }}>
         <CRM3D />
       </div>
 
@@ -1554,7 +1705,7 @@ function CaseCRMStepsSection() {
       </div>
 
       {/* Left: 6 cards 3×2 */}
-      <div style={{ position: "absolute", left: "3.125vw", top: "clamp(100px, 14.7vh, 155px)", bottom: "clamp(20px, 3vh, 36px)", width: "51%", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gridTemplateRows: "1fr 1fr", gap: "clamp(6px, 0.83vw, 14px)" }}>
+      <div className="crm-cards-grid" style={{ position: "absolute", left: "3.125vw", top: "clamp(100px, 14.7vh, 155px)", bottom: "clamp(20px, 3vh, 36px)", width: "51%", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gridTemplateRows: "1fr 1fr", gap: "clamp(6px, 0.83vw, 14px)" }}>
         {points.map(({ num, title, desc, color }) => (
           <GlowCard key={num} glowColor="cyan" style={{ background: "rgba(255,255,255,0.025)", borderRadius: "clamp(10px, 1.04vw, 20px)", padding: "clamp(12px, 1.67vh, 22px) clamp(12px, 1.04vw, 20px)", display: "flex", flexDirection: "column", justifyContent: "space-between", boxSizing: "border-box" }}>
             <span className="card-num" style={{ fontFamily: font, fontWeight: 400, fontSize: "clamp(22px, 2.5vw, 48px)", lineHeight: 1, letterSpacing: "-0.05em", color, opacity: 0.5 }}>{num}</span>
@@ -1567,7 +1718,7 @@ function CaseCRMStepsSection() {
       </div>
 
       {/* Right: CRM pipeline SVG */}
-      <div style={{ position: "absolute", right: "3.125vw", top: "50%", transform: "translateY(-50%)", width: "clamp(220px, 38vw, 700px)", height: "clamp(220px, 38vw, 700px)" }}>
+      <div className="crm-diagram" style={{ position: "absolute", right: "3.125vw", top: "50%", transform: "translateY(-50%)", width: "clamp(220px, 38vw, 700px)", height: "clamp(220px, 38vw, 700px)" }}>
         <svg viewBox="0 0 460 460" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "100%", height: "100%" }}>
           <defs>
             <filter id="crmGlow"><feGaussianBlur stdDeviation="4" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
@@ -1663,7 +1814,7 @@ function CaseWarehouseBuildIntroSection() {
   ];
 
   return (
-    <section style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#070f0c" }}>
+    <section className="split-section" style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#070f0c" }}>
       {/* Glows */}
       <div style={{ position: "absolute", right: "-8vw", top: "10vh", width: "55vw", height: "55vw", background: "radial-gradient(circle, rgba(16,185,129,0.10) 0%, transparent 65%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", left: "-5vw", bottom: "0", width: "40vw", height: "40vw", background: "radial-gradient(circle, rgba(16,185,129,0.05) 0%, transparent 65%)", pointerEvents: "none" }} />
@@ -1706,7 +1857,7 @@ function CaseWarehouseBuildIntroSection() {
       </div>
 
       {/* Warehouse3D — right */}
-      <div style={{ position: "absolute", right: "clamp(20px, 3vw, 60px)", top: "50%", transform: "translateY(-50%)", width: "clamp(280px, 43vw, 820px)", height: "clamp(280px, 43vw, 820px)", pointerEvents: "none" }}>
+      <div className="split-vis" style={{ position: "absolute", right: "clamp(20px, 3vw, 60px)", top: "50%", transform: "translateY(-50%)", width: "clamp(280px, 43vw, 820px)", height: "clamp(280px, 43vw, 820px)", pointerEvents: "none" }}>
         <Warehouse3D />
       </div>
     </section>
@@ -1717,7 +1868,7 @@ function CaseWarehouseBuildScreenSection() {
   const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
 
   return (
-    <section style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#050c09", overflow: "hidden" }}>
+    <section className="split-section case-screenshot" style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#050c09", overflow: "clip" }}>
       {/* Vertical stripe overlay — like block 2 */}
       <div style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0) 48px)", pointerEvents: "none", zIndex: 1 }} />
 
@@ -1748,8 +1899,7 @@ function CaseWarehouseBuildScreenSection() {
       >
         {/* Horizontal scan lines inside frame */}
         <div style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(0deg, rgba(16,185,129,0.04) 0px, rgba(16,185,129,0) 32px)", pointerEvents: "none", zIndex: 1 }} />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+                <Img
           alt="План помещения склада — АВС-зонирование"
           src="/warehouse-build-screenshot.jpg"
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }}
@@ -1823,6 +1973,7 @@ function CaseWarehouseSection() {
       </div>
 
       <div
+        className="warehouse-grid"
         style={{
           position: "relative",
           zIndex: 1,
@@ -2115,6 +2266,7 @@ function CaseWarehousePlanSection() {
       </div>
 
       <div
+        className="warehouse-plan-grid"
         style={{
           position: "relative",
           zIndex: 1,
@@ -2145,8 +2297,7 @@ function CaseWarehousePlanSection() {
               boxShadow: "0 30px 80px rgba(0, 0, 0, 0.18)",
             }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+                        <Img
               alt="План склада"
               src={WAREHOUSE_PLAN_IMG}
               style={{
@@ -2275,6 +2426,7 @@ function ServicesSection() {
   const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
   return (
     <section
+      className="split-section"
       style={{
         ...sectionStyle,
         minHeight: "max(100svh, 760px)",
@@ -2284,16 +2436,16 @@ function ServicesSection() {
       {/* Vector blob 1 — Figma: left:-999, top:-532, w:2349, h:1943 */}
       <div style={{ position: "absolute", left: "-52.03vw", top: "-49.26vh", width: "122.34vw", height: "179.91vh", pointerEvents: "none" }}>
         <div style={{ position: "absolute", top: "5.17%", right: "1.3%", bottom: "0.77%", left: "4.41%" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="" src={SERVICES_VECTOR1_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
+          { }
+          <Img alt="" src={SERVICES_VECTOR1_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
         </div>
       </div>
 
       {/* Vector blob 2 — Figma: left:431, top:-1252, w:2349, h:1943 */}
       <div style={{ position: "absolute", left: "22.45vw", top: "-115.93vh", width: "122.34vw", height: "179.91vh", pointerEvents: "none" }}>
         <div style={{ position: "absolute", top: "5.17%", right: "1.3%", bottom: "0.77%", left: "4.41%" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="" src={SERVICES_VECTOR2_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
+          { }
+          <Img alt="" src={SERVICES_VECTOR2_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
         </div>
       </div>
 
@@ -2317,6 +2469,7 @@ function ServicesSection() {
 
       {/* "Услуги" — Figma: left:calc(50%-871px), top:484, font:580px, gradient text */}
       <p
+        className="svc-title-text"
         style={{
           position: "absolute",
           left: "calc(50% - 45.36vw)",
@@ -2340,7 +2493,7 @@ function ServicesSection() {
       </p>
 
       {/* Infinity logo — animated */}
-      <div style={{ position: "absolute", left: "86.72vw", top: "clamp(20px, 4.26vh, 46px)", width: "clamp(80px, 11.3vw, 217px)", height: "clamp(40px, 10.28vh, 111px)", pointerEvents: "none", zIndex: 2 }}>
+      <div className="svc-infinity" style={{ position: "absolute", left: "86.72vw", top: "clamp(20px, 4.26vh, 46px)", width: "clamp(80px, 11.3vw, 217px)", height: "clamp(40px, 10.28vh, 111px)", pointerEvents: "none", zIndex: 2 }}>
         <InfinityAnimation />
       </div>
     </section>
@@ -2352,6 +2505,7 @@ function CaseChairsWbSection() {
   const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
   return (
     <section
+      className="split-section"
       style={{
         ...sectionStyle,
         minHeight: "max(100svh, 760px)",
@@ -2398,8 +2552,8 @@ function CaseChairsWbSection() {
           boxSizing: "border-box",
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img alt="" src={CHAIRS_WB_SCREENSHOT_IMG} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />
+        { }
+        <Img alt="" src={CHAIRS_WB_SCREENSHOT_IMG} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />
       </div>
 
       {/* Caption — Figma: centered, top:941, WB logo with #ececec bg */}
@@ -2416,8 +2570,8 @@ function CaseChairsWbSection() {
         }}
       >
         <div style={{ width: "clamp(28px, 3.33vw, 64px)", height: "clamp(28px, 3.33vw, 64px)", borderRadius: "50%", background: "#ececec", border: "3px solid #ececec", overflow: "hidden", flexShrink: 0, position: "relative" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="" src={CHAIRS_WB_LOGO_IMG} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />
+          { }
+          <Img alt="" src={CHAIRS_WB_LOGO_IMG} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />
         </div>
         <p style={{ fontFamily: font, fontWeight: 400, fontSize: "clamp(14px, 1.823vw, 35px)", lineHeight: 1.2, letterSpacing: "-0.035em", color: "#0d1f1f", opacity: 0.5, margin: 0, whiteSpace: "nowrap" }}>
           Скриншот личного кабинета Wildberries
@@ -2432,6 +2586,7 @@ function CaseChairsScreenshotSection() {
   const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
   return (
     <section
+      className="split-section case-screenshot"
       style={{
         ...sectionStyle,
         minHeight: "max(100svh, 760px)",
@@ -2477,8 +2632,8 @@ function CaseChairsScreenshotSection() {
           boxSizing: "border-box",
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img alt="" src={CHAIRS_SCREENSHOT_IMG} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />
+        { }
+        <Img alt="" src={CHAIRS_SCREENSHOT_IMG} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />
       </div>
 
       {/* Caption — Figma: centered, top:941 */}
@@ -2495,8 +2650,8 @@ function CaseChairsScreenshotSection() {
         }}
       >
         <div style={{ width: "clamp(28px, 3.33vw, 64px)", height: "clamp(28px, 3.33vw, 64px)", borderRadius: "50%", background: "#ffffff", overflow: "hidden", flexShrink: 0, position: "relative" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="" src={CHAIRS_OZON_LOGO_IMG} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />
+          { }
+          <Img alt="" src={CHAIRS_OZON_LOGO_IMG} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />
         </div>
         <p style={{ fontFamily: font, fontWeight: 400, fontSize: "clamp(14px, 1.823vw, 35px)", lineHeight: 1.2, letterSpacing: "-0.035em", color: "#0d1f1f", opacity: 0.5, margin: 0, whiteSpace: "nowrap" }}>
           Скриншот личного кабинета Ozon
@@ -2511,6 +2666,7 @@ function CaseChairsSection() {
   const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
   return (
     <section
+      className="split-section"
       style={{
         ...sectionStyle,
         minHeight: "max(100svh, 760px)",
@@ -2578,8 +2734,7 @@ function CaseChairsSection() {
       </div>
 
       {/* Graph — Figma: left:-6, top:556, width:1926, height:524 */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+            <Img
         alt=""
         src={CHAIRS_GRAPH_IMG}
         style={{
@@ -2629,8 +2784,7 @@ function CaseChairsSection() {
       </div>
 
       {/* Left dot+line — Figma: left:63, top:762, w:18, h:106 */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+            <Img
         alt=""
         src={CHAIRS_DOT_LINE_L}
         style={{
@@ -2646,8 +2800,7 @@ function CaseChairsSection() {
       />
 
       {/* Right dot+line — Figma: left:1423, top:405, w:18, h:160 */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+            <Img
         alt=""
         src={CHAIRS_DOT_LINE_R}
         style={{
@@ -2681,6 +2834,7 @@ function CaseChairsSection() {
 
       {/* Right info — Figma: left:1423, top:602, w:502 */}
       <div
+        className="chairs-right-stat"
         style={{
           position: "absolute",
           left: "74.11vw",
@@ -2701,8 +2855,8 @@ function CaseChairsSection() {
           </p>
           {/* +88% badge */}
           <div style={{ display: "flex", alignItems: "center", gap: "4px", padding: "clamp(5px, 1.3vh, 14px) 8px", borderRadius: "300px", background: "rgba(255,255,255,0.4)", border: "2px solid #ffffff", backdropFilter: "blur(50px)", flexShrink: 0 }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="" src={CHAIRS_ARROW_IMG} style={{ width: "clamp(10px, 1.15vw, 22px)", height: "clamp(9px, 1.57vh, 17px)", display: "block", pointerEvents: "none" }} />
+            { }
+            <Img alt="" src={CHAIRS_ARROW_IMG} style={{ width: "clamp(10px, 1.15vw, 22px)", height: "clamp(9px, 1.57vh, 17px)", display: "block", pointerEvents: "none" }} />
             <p style={{ fontFamily: font, fontWeight: 400, fontSize: "clamp(10px, 1.25vw, 24px)", lineHeight: 1, letterSpacing: "-0.035em", color: "#ff00e6", margin: 0, whiteSpace: "nowrap" }}><CountUp value={88} suffix="%" duration={2200} /></p>
           </div>
         </div>
@@ -2719,6 +2873,7 @@ function CaseSeasonalScreenshotSection() {
   const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
   return (
     <section
+      className="split-section case-screenshot"
       style={{
         ...sectionStyle,
         minHeight: "max(100svh, 760px)",
@@ -2776,8 +2931,7 @@ function CaseSeasonalScreenshotSection() {
           boxSizing: "border-box",
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+                <Img
           alt=""
           src={SEASONAL_SCREENSHOT_IMG}
           style={{
@@ -2814,8 +2968,7 @@ function CaseSeasonalScreenshotSection() {
             position: "relative",
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+                    <Img
             alt=""
             src={SEASONAL_OZON_LOGO_IMG}
             style={{
@@ -2887,6 +3040,7 @@ function CaseSeasonalSection() {
 
   return (
     <section
+      className="split-section"
       style={{
         ...sectionStyle,
         minHeight: "max(100svh, 760px)",
@@ -3065,6 +3219,7 @@ function ServicesAuditSection() {
   };
   return (
     <section
+      className="split-section audit-section"
       style={{
         ...sectionStyle,
         minHeight: "max(100svh, 760px)",
@@ -3073,6 +3228,7 @@ function ServicesAuditSection() {
     >
       {/* Badge "АУДИТ КАБИНЕТА" — Figma: right:1618px ≈ left:60px, top:63px */}
       <div
+        className="audit-badge"
         style={{
           position: "absolute",
           left: "3.125vw",
@@ -3105,6 +3261,7 @@ function ServicesAuditSection() {
 
       {/* Heading — Figma: left:60 top:133 font:100px tracking:-3.5px w:828px */}
       <p
+        className="audit-heading"
         style={{
           position: "absolute",
           left: "3.125vw",
@@ -3124,6 +3281,7 @@ function ServicesAuditSection() {
 
       {/* Description — Figma: left:60 top:808 font:45px tracking:-1.575px w:730px */}
       <p
+        className="audit-description"
         style={{
           position: "absolute",
           left: "3.125vw",
@@ -3143,6 +3301,7 @@ function ServicesAuditSection() {
 
       {/* Right card — Figma: left:970 top:60 w:890 h:960 bg:rgba(18,18,18,0.3) p:48 r:60 */}
       <div
+        className="audit-right-card"
         style={{
           position: "absolute",
           right: "3.125vw",
@@ -3179,7 +3338,7 @@ function ServicesAuditSection() {
         <div style={{ display: "flex", flexDirection: "column", gap: "clamp(6px, 0.625vw, 12px)", width: "100%" }}>
           {/* Row 1 */}
           <div style={{ display: "flex", gap: "clamp(6px, 0.625vw, 12px)" }}>
-            <GlowCard style={innerCardStyle}>
+            <GlowCard className="audit-inner-card" style={innerCardStyle}>
               <p style={{ fontFamily: font, fontWeight: 400, fontSize: "clamp(9px, 1.25vw, 24px)", lineHeight: 1, letterSpacing: "-0.035em", color: "#ffffff", opacity: 0.3, margin: 0, whiteSpace: "nowrap" }}>
                 CTR, конверсия, позиции
               </p>
@@ -3187,7 +3346,7 @@ function ServicesAuditSection() {
                 Воронка
               </p>
             </GlowCard>
-            <GlowCard style={innerCardStyle}>
+            <GlowCard className="audit-inner-card" style={innerCardStyle}>
               <p style={{ fontFamily: font, fontWeight: 400, fontSize: "clamp(9px, 1.25vw, 24px)", lineHeight: 1.2, letterSpacing: "-0.035em", color: "#ffffff", opacity: 0.3, margin: 0 }}>
                 Эффективность<br />кампаний
               </p>
@@ -3198,7 +3357,7 @@ function ServicesAuditSection() {
           </div>
           {/* Row 2 */}
           <div style={{ display: "flex", gap: "clamp(6px, 0.625vw, 12px)" }}>
-            <GlowCard style={innerCardStyle}>
+            <GlowCard className="audit-inner-card" style={innerCardStyle}>
               <p style={{ fontFamily: font, fontWeight: 400, fontSize: "clamp(9px, 1.25vw, 24px)", lineHeight: 1.2, letterSpacing: "-0.035em", color: "#ffffff", opacity: 0.3, margin: 0 }}>
                 Себестоимость,<br />маржинальность
               </p>
@@ -3206,7 +3365,7 @@ function ServicesAuditSection() {
                 Финансы
               </p>
             </GlowCard>
-            <GlowCard style={innerCardStyle}>
+            <GlowCard className="audit-inner-card" style={innerCardStyle}>
               <p style={{ fontFamily: font, fontWeight: 400, fontSize: "clamp(9px, 1.25vw, 24px)", lineHeight: 1, letterSpacing: "-0.035em", color: "#ffffff", opacity: 0.3, margin: 0, whiteSpace: "nowrap" }}>
                 Качество карточек
               </p>
@@ -3231,35 +3390,37 @@ function ServicesExternalSection() {
     "Настраиваем воронки продаж",
   ];
   return (
-    <section style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#0d1f1f" }}>
+    <section className="split-section" style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#0ABAB5" }}>
 
       {/* Ellipse blob — Figma: left:-395 top:-1055 size:2756, inset:-3.63% */}
       <div style={{ position: "absolute", left: "-20.57vw", top: "-97.69vh", width: "143.54vw", height: "143.54vw", pointerEvents: "none" }}>
         <div style={{ position: "absolute", inset: "-3.63%" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="" src={EXT_ELLIPSE_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
+          { }
+          <Img alt="" src={EXT_ELLIPSE_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
         </div>
       </div>
 
       {/* Group blob — Figma: left:-158 top:-342 w:1853 h:1854, inset:-6.47%/-6.48% */}
       <div style={{ position: "absolute", left: "-8.23vw", top: "-31.67vh", width: "96.51vw", height: "171.67vh", pointerEvents: "none" }}>
         <div style={{ position: "absolute", inset: "-6.47% -6.48%" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="" src={EXT_GROUP_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
+          { }
+          <Img alt="" src={EXT_GROUP_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
         </div>
       </div>
 
       {/* Horizontal blur band — top:0 h:745 bg:rgba(255,255,255,0.1) blur:50px */}
       <div style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "68.98vh", background: "rgba(255,255,255,0.1)", backdropFilter: "blur(50px)", WebkitBackdropFilter: "blur(50px)", pointerEvents: "none", zIndex: 1 }} />
 
-      {/* 41 vertical strips × 45px, PNG image + backdrop-blur:10px */}
-      {Array.from({ length: 41 }, (_, i) => (
-        <div key={i} style={{ position: "absolute", left: `${(i * 45 / 1920) * 100}vw`, top: 0, width: "2.34375vw", height: "100%", pointerEvents: "none", zIndex: 2 }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="" src={i === 0 ? EXT_STRIP1_IMG : EXT_STRIP2_IMG}
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", maxWidth: "none" }} />
-        </div>
-      ))}
+      {/* Vertical stripe overlay — CSS repeating gradient, 43px bands + 2px gap */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: "repeating-linear-gradient(90deg, rgba(255,255,255,0.10) 0px, rgba(255,255,255,0.10) 43px, rgba(0,0,0,0.06) 43px, rgba(0,0,0,0.06) 45px)",
+          pointerEvents: "none",
+          zIndex: 2,
+        }}
+      />
 
       {/* Badge "ВНЕШНИЕ КАНАЛЫ ПРОДАЖ" — left:60 top:60 */}
       <div style={{ position: "absolute", left: "3.125vw", top: "clamp(30px, 5.56vh, 60px)", display: "flex", alignItems: "center", padding: "clamp(8px, 1.11vh, 12px) clamp(10px, 0.83vw, 16px)", borderRadius: "300px", background: "rgba(69,69,69,0.3)", backdropFilter: "blur(15px)", WebkitBackdropFilter: "blur(15px)", zIndex: 3 }}>
@@ -3269,7 +3430,7 @@ function ServicesExternalSection() {
       </div>
 
       {/* White info card — Figma: left:1125 top:60 container w:735 h:960 */}
-      <div style={{
+      <div className="ext-white-card" style={{
         position: "absolute",
         right: "3.125vw",
         top: "clamp(30px, 5.56vh, 60px)",
@@ -3365,23 +3526,6 @@ function ServicesExternalSection() {
 function ServicesAiSection() {
   const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
   const barGradient = "linear-gradient(90deg, #055452, #0bbab5)";
-  // Vertical line rendered from a horizontal image via rotation
-  const LineDown = ({ h }: { h: string }) => (
-    <div style={{ width: 0, height: h, flexShrink: 0, position: "relative" }}>
-      <div style={{ position: "absolute", top: 0, left: 0, width: h, transformOrigin: "top left", transform: "rotate(90deg) scaleY(-1)", overflow: "hidden" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img alt="" src={AI_LINE_DOWN_IMG} style={{ display: "block", width: "100%", height: "4px", maxWidth: "none" }} />
-      </div>
-    </div>
-  );
-  const LineUp = ({ h }: { h: string }) => (
-    <div style={{ width: 0, height: h, flexShrink: 0, position: "relative" }}>
-      <div style={{ position: "absolute", bottom: 0, left: 0, width: h, transformOrigin: "bottom left", transform: "rotate(-90deg)", overflow: "hidden" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img alt="" src={AI_LINE_UP_IMG} style={{ display: "block", width: "100%", height: "4px", maxWidth: "none" }} />
-      </div>
-    </div>
-  );
   const lineH = "clamp(90px, 18.06vh, 195px)";
   const labelFont: React.CSSProperties = {
     fontFamily: font, fontWeight: 400,
@@ -3390,7 +3534,7 @@ function ServicesAiSection() {
     width: "clamp(120px, 19.9vw, 382px)",
   };
   return (
-    <section style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#0d1f1f" }}>
+    <section className="split-section" style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#0d1f1f" }}>
 
       {/* Infinity logo — animated */}
       <div style={{ position: "absolute", left: "2.76vw", top: "5vh", width: "clamp(50px, 6.094vw, 117px)", height: "clamp(26px, 5.56vh, 60px)", pointerEvents: "none" }}>
@@ -3405,7 +3549,7 @@ function ServicesAiSection() {
       </div>
 
       {/* Graph container — Figma: left:60 top:215 w:1800 h:531 */}
-      <div style={{ position: "absolute", left: "3.125vw", top: "clamp(130px, 19.91vh, 215px)", width: "93.75vw", height: "clamp(260px, 49.17vh, 531px)" }}>
+      <div className="ai-graph-container" style={{ position: "absolute", left: "3.125vw", top: "clamp(130px, 19.91vh, 215px)", width: "93.75vw", height: "clamp(260px, 49.17vh, 531px)" }}>
 
         {/* Bars at 40.11% from top, height 19.77% */}
         {/* Bar 1 — left:0% w:25% opacity:0.2, rounded left */}
@@ -3419,25 +3563,25 @@ function ServicesAiSection() {
 
         {/* Label 1 (top, left:0) — "Находим процессы для автоматизации" */}
         <div style={{ position: "absolute", left: "0%", top: 0, display: "flex", gap: "clamp(12px, 1.25vw, 24px)", alignItems: "flex-start" }}>
-          <LineDown h={lineH} />
+          <AiVerticalLine direction="down" height={lineH} />
           <p style={labelFont}>Находим процессы<br />для автоматизации</p>
         </div>
 
         {/* Label 3 (top, left:50%) — "Внедряем в работу команды" */}
         <div style={{ position: "absolute", left: "50%", top: 0, display: "flex", gap: "clamp(12px, 1.25vw, 24px)", alignItems: "flex-start" }}>
-          <LineDown h={lineH} />
+          <AiVerticalLine direction="down" height={lineH} />
           <p style={labelFont}>Внедряем в работу команды</p>
         </div>
 
         {/* Label 2 (bottom, left:25%) — "Подбираем AI-инструменты" */}
         <div style={{ position: "absolute", left: "25%", top: "63.28%", display: "flex", gap: "clamp(12px, 1.25vw, 24px)", alignItems: "flex-end" }}>
-          <LineUp h={lineH} />
+          <AiVerticalLine direction="up" height={lineH} />
           <p style={labelFont}>Подбираем AI-инструменты</p>
         </div>
 
         {/* Label 4 (bottom, left:75%) — "Обучаем сотрудников" */}
         <div style={{ position: "absolute", left: "75%", top: "63.28%", display: "flex", gap: "clamp(12px, 1.25vw, 24px)", alignItems: "flex-end" }}>
-          <LineUp h={lineH} />
+          <AiVerticalLine direction="up" height={lineH} />
           <p style={labelFont}>Обучаем сотрудников</p>
         </div>
       </div>
@@ -3470,28 +3614,28 @@ function ServicesAccountingSection() {
   const labelStyle: React.CSSProperties = { fontFamily: font, fontWeight: 400, fontSize: "clamp(8px, 1.25vw, 24px)", lineHeight: 1, letterSpacing: "-0.035em", color: "#ffffff", opacity: 0.3, margin: 0, whiteSpace: "pre" };
   const titleStyle: React.CSSProperties = { fontFamily: font, fontWeight: 400, fontSize: "clamp(20px, 3.333vw, 64px)", lineHeight: 1, letterSpacing: "-0.035em", color: "#ffffff", margin: 0 };
   return (
-    <section style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#ffffff" }}>
+    <section className="split-section accounting-section" style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#ffffff" }}>
 
       {/* Heading — Figma: left:60 top:60 font:100px tracking:-3.5px w:675 color:#0d1f1f */}
-      <p style={{ position: "absolute", left: "3.125vw", top: "clamp(30px, 5.56vh, 60px)", width: "clamp(220px, 35.16vw, 675px)", fontFamily: font, fontWeight: 400, fontSize: "clamp(32px, 5.208vw, 100px)", lineHeight: 0.9, letterSpacing: "-0.035em", color: "#0d1f1f", margin: 0 }}>
+      <p className="accounting-heading" style={{ position: "absolute", left: "3.125vw", top: "clamp(30px, 5.56vh, 60px)", width: "clamp(220px, 35.16vw, 675px)", fontFamily: font, fontWeight: 400, fontSize: "clamp(32px, 5.208vw, 100px)", lineHeight: 0.9, letterSpacing: "-0.035em", color: "#0d1f1f", margin: 0 }}>
         Внедряем системы учета
       </p>
 
       {/* Subtext — Figma: bottom:785px → top:295px left:60px opacity:0.3 font:35px */}
-      <p style={{ position: "absolute", left: "3.125vw", top: "clamp(170px, 27.31vh, 295px)", fontFamily: font, fontWeight: 400, fontSize: "clamp(12px, 1.823vw, 35px)", lineHeight: 1.2, letterSpacing: "-0.035em", color: "#0d1f1f", opacity: 0.3, margin: 0, whiteSpace: "nowrap" }}>
+      <p className="accounting-subtext" style={{ position: "absolute", left: "3.125vw", top: "clamp(170px, 27.31vh, 295px)", fontFamily: font, fontWeight: 400, fontSize: "clamp(12px, 1.823vw, 35px)", lineHeight: 1.2, letterSpacing: "-0.035em", color: "#0d1f1f", opacity: 0.3, margin: 0, whiteSpace: "nowrap" }}>
         CRM, дашборды, автоматизация
       </p>
 
       {/* Description — Figma: bottom:227px → top:853px left:60px font:45px w:811 */}
-      <p style={{ position: "absolute", left: "3.125vw", top: "clamp(580px, 79.0vh, 853px)", width: "clamp(200px, 42.24vw, 811px)", fontFamily: font, fontWeight: 400, fontSize: "clamp(14px, 2.34vw, 45px)", lineHeight: 1, letterSpacing: "-0.035em", color: "#0d1f1f", margin: 0 }}>
+      <p className="accounting-description" style={{ position: "absolute", left: "3.125vw", top: "clamp(580px, 79.0vh, 853px)", width: "clamp(200px, 42.24vw, 811px)", fontFamily: font, fontWeight: 400, fontSize: "clamp(14px, 2.34vw, 45px)", lineHeight: 1, letterSpacing: "-0.035em", color: "#0d1f1f", margin: 0 }}>
         Полная картина бизнеса в одном месте: продажи, остатки, финансы, план-факт в реальном времени, автоматические отчёты
       </p>
 
       {/* Right teal panel — Figma: left:50% top:0 w:960px h:full, gradient #0d1f1f→#388585 */}
-      <div style={{ position: "absolute", left: "50%", top: 0, width: "50%", height: "100%", background: "linear-gradient(221.19deg, #0d1f1f 0%, #388585 99.316%)", overflow: "hidden" }}>
+      <div className="accounting-panel" style={{ position: "absolute", left: "50%", top: 0, width: "50%", height: "100%", background: "linear-gradient(221.19deg, #0d1f1f 0%, #388585 99.316%)", overflow: "hidden" }}>
 
         {/* Cards grid — Figma: left:36 top:60 w:864 gap:12 */}
-        <div style={{ position: "absolute", left: "3.75%", top: "clamp(30px, 5.56vh, 60px)", width: "90%", display: "flex", flexDirection: "column", gap: "clamp(6px, 0.625vw, 12px)" }}>
+        <div className="accounting-cards-grid" style={{ position: "absolute", left: "3.75%", top: "clamp(30px, 5.56vh, 60px)", width: "90%", display: "flex", flexDirection: "column", gap: "clamp(6px, 0.625vw, 12px)" }}>
           {/* Row 1 */}
           <div style={{ display: "flex", gap: "clamp(6px, 0.625vw, 12px)" }}>
             <GlowCard style={cardStyle}>
@@ -3525,25 +3669,26 @@ function ServicesManagementSection() {
   const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
   return (
     <section
+      className="split-section"
       style={{
         ...sectionStyle,
         minHeight: "max(100svh, 760px)",
-        backgroundColor: "#0d1f1f",
+        backgroundColor: "#D400AA",
       }}
     >
       {/* Ellipse blob — Figma: left:-257 top:-1055 size:2480, inset:-4.03% */}
       <div style={{ position: "absolute", left: "-13.39vw", top: "-97.69vh", width: "129.17vw", height: "129.17vw", pointerEvents: "none" }}>
         <div style={{ position: "absolute", inset: "-4.03%" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="" src={MGMT_ELLIPSE_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
+          { }
+          <Img alt="" src={MGMT_ELLIPSE_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
         </div>
       </div>
 
       {/* Group blob — Figma: left:-44 top:-413 size:1668, inset:-7.19% */}
       <div style={{ position: "absolute", left: "-2.29vw", top: "-38.24vh", width: "86.875vw", height: "86.875vw", pointerEvents: "none" }}>
         <div style={{ position: "absolute", inset: "-7.19%" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="" src={MGMT_GROUP_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
+          { }
+          <Img alt="" src={MGMT_GROUP_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
         </div>
       </div>
 
@@ -3563,23 +3708,16 @@ function ServicesManagementSection() {
         }}
       />
 
-      {/* 41 vertical strips × 45px, backdrop-blur:10px */}
-      {Array.from({ length: 41 }, (_, i) => (
-        <div
-          key={i}
-          style={{
-            position: "absolute",
-            left: `${(i * 45 / 1920) * 100}vw`,
-            top: 0,
-            width: "2.34375vw",
-            height: "100%",
-            backdropFilter: "blur(10px)",
-            WebkitBackdropFilter: "blur(10px)",
-            pointerEvents: "none",
-            zIndex: 2,
-          }}
-        />
-      ))}
+      {/* Vertical stripe overlay — CSS repeating gradient, 43px bands + 2px gap */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: "repeating-linear-gradient(90deg, rgba(255,255,255,0.10) 0px, rgba(255,255,255,0.10) 43px, rgba(0,0,0,0.08) 43px, rgba(0,0,0,0.08) 45px)",
+          pointerEvents: "none",
+          zIndex: 2,
+        }}
+      />
 
       {/* Heading row — Figma: right:60 top:60 w:1800 justify-between */}
       <div
@@ -3613,6 +3751,7 @@ function ServicesManagementSection() {
 
         {/* Right column: badge + avatar group */}
         <div
+          className="sales-icons-col"
           style={{
             display: "flex",
             flexDirection: "column",
@@ -3666,9 +3805,9 @@ function ServicesManagementSection() {
             }}
           >
             {[
-              { src: MGMT_AVATAR1_IMG, bg: "#ffffff" },
-              { src: MGMT_AVATAR2_IMG, bg: "#1e2a2a" },
-              { src: MGMT_AVATAR3_IMG, bg: "#1e2a2a" },
+              { src: MGMT_AVATAR1_IMG, bg: "#005BFF" },  // Ozon blue
+              { src: MGMT_AVATAR2_IMG, bg: "#7B0EAF" },  // WB purple
+              { src: MGMT_AVATAR3_IMG, bg: "#FC3F1D" },  // Маркет orange
             ].map((av, idx) => (
               <div
                 key={idx}
@@ -3685,8 +3824,7 @@ function ServicesManagementSection() {
                   boxSizing: "border-box",
                 }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                                <Img
                   alt=""
                   src={av.src}
                   style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none", maxWidth: "none" }}
@@ -3714,6 +3852,7 @@ function ServicesManagementSection() {
       >
         {/* Left description — Figma: left:60 top:66 font:45px w:730 color:#0d1f1f */}
         <p
+          className="sales-card-left"
           style={{
             position: "absolute",
             left: "3.125vw",
@@ -3733,6 +3872,7 @@ function ServicesManagementSection() {
 
         {/* Right list — Figma: left:910 top:57 font:35px opacity:0.5 color:#0d1f1f */}
         <div
+          className="sales-card-right"
           style={{
             position: "absolute",
             left: "47.4vw",
@@ -3764,6 +3904,7 @@ function ServicesPodborSection() {
   const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
   return (
     <section
+      className="split-section"
       style={{
         ...sectionStyle,
         minHeight: "max(100svh, 760px)",
@@ -3804,6 +3945,7 @@ function ServicesPodborSection() {
           border:13.765px rgba(254,254,254,0.1) r:27.531 bg:#0a0406
           inset-shadow:0 0 97px 14px rgba(255,0,230,0.4) */}
       <div
+        className="podbor-phone-card"
         style={{
           position: "absolute",
           left: "calc(50% + 3.26vw)",
@@ -3840,8 +3982,7 @@ function ServicesPodborSection() {
               overflow: "visible",
             }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+                        <Img
               alt=""
               src={PODBOR_ELLIPSE_IMG}
               style={{ position: "absolute", inset: "-96.15% -5.64%", width: "111.28%", height: "296.3%", maxWidth: "none", pointerEvents: "none" }}
@@ -3860,14 +4001,12 @@ function ServicesPodborSection() {
               overflow: "hidden",
             }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+                        <Img
               alt=""
               src={PODBOR_LINE1_IMG}
               style={{ position: "absolute", top: "50%", left: 0, width: "100%", height: "30%", transform: "translateY(-50%)", maxWidth: "none", pointerEvents: "none" }}
             />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+                        <Img
               alt=""
               src={PODBOR_LINE2_IMG}
               style={{ position: "absolute", top: "50%", left: 0, width: "100%", height: "30%", transform: "translateY(-50%)", maxWidth: "none", pointerEvents: "none", mixBlendMode: "plus-lighter" }}
@@ -3885,8 +4024,7 @@ function ServicesPodborSection() {
               transform: "translateX(-50%) translateY(-50%)",
             }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+                        <Img
               alt=""
               src={PODBOR_PRO_IMG}
               style={{ position: "absolute", inset: "-95.61% -5.96%", width: "111.92%", height: "291.22%", maxWidth: "none", pointerEvents: "none" }}
@@ -4028,14 +4166,14 @@ function ServicesTeamSection() {
     "Выстраиваем систему адаптации",
   ];
   return (
-    <section style={{
+    <section className="split-section team-section" style={{
       ...sectionStyle,
       minHeight: "max(100svh, 760px)",
       background: "linear-gradient(202.23deg, rgb(13,31,31) 15.55%, rgb(56,133,133) 99.342%)",
-      overflow: "hidden",
+      overflow: "clip",
     }}>
       {/* Heading — left:60 top:60 font:100px w:993px */}
-      <p style={{
+      <p className="team-heading" style={{
         position: "absolute",
         left: "3.125vw",
         top: "clamp(30px, 5.56vh, 60px)",
@@ -4053,7 +4191,7 @@ function ServicesTeamSection() {
       </p>
 
       {/* Badge — left:1440 top:60 */}
-      <div style={{
+      <div className="team-badge" style={{
         position: "absolute",
         left: "clamp(900px, 75vw, 1440px)",
         top: "clamp(30px, 5.56vh, 60px)",
@@ -4082,7 +4220,7 @@ function ServicesTeamSection() {
       </div>
 
       {/* Body text left — left:60 top:291 w:770px font:45px */}
-      <p style={{
+      <p className="team-description" style={{
         position: "absolute",
         left: "3.125vw",
         top: "clamp(160px, 26.94vh, 291px)",
@@ -4100,7 +4238,7 @@ function ServicesTeamSection() {
       </p>
 
       {/* Bullet list right — left:970 top:291 opacity:50% font:45px */}
-      <div style={{
+      <div className="team-bullets" style={{
         position: "absolute",
         left: "clamp(360px, 50.52vw, 970px)",
         top: "clamp(160px, 26.94vh, 291px)",
@@ -4127,7 +4265,7 @@ function ServicesTeamSection() {
       </div>
 
       {/* Radar — left:12 top:573 w:1896 h:1891 flipped vertically */}
-      <div style={{
+      <div className="team-radar" style={{
         position: "absolute",
         left: "0.625vw",
         top: "clamp(320px, 53.06vh, 573px)",
@@ -4137,12 +4275,12 @@ function ServicesTeamSection() {
         zIndex: 1,
         pointerEvents: "none",
       }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img alt="" src={TEAM_RADAR_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
+        { }
+        <Img alt="" src={TEAM_RADAR_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
       </div>
 
       {/* Gradient overlay — same container as radar, image in top half (bottom:50%) */}
-      <div style={{
+      <div className="team-gradient-overlay" style={{
         position: "absolute",
         left: "0.677vw",
         top: "clamp(320px, 53.06vh, 573px)",
@@ -4152,32 +4290,32 @@ function ServicesTeamSection() {
         pointerEvents: "none",
       }}>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: "50%" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="" src={TEAM_GRADIENT_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
+          { }
+          <Img alt="" src={TEAM_GRADIENT_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
         </div>
       </div>
 
       {/* Dot 1 — left:444 top:850 size:67px */}
-      <div style={{ position: "absolute", left: "23.125vw", top: "78.7vh", width: "clamp(30px, 3.49vw, 67px)", height: "clamp(30px, 3.49vw, 67px)", zIndex: 3, pointerEvents: "none" }}>
+      <div className="team-dot" style={{ position: "absolute", left: "23.125vw", top: "78.7vh", width: "clamp(30px, 3.49vw, 67px)", height: "clamp(30px, 3.49vw, 67px)", zIndex: 3, pointerEvents: "none" }}>
         <div style={{ position: "absolute", inset: "-74.63%" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="" src={TEAM_DOT1_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
+          { }
+          <Img alt="" src={TEAM_DOT1_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
         </div>
       </div>
 
       {/* Dot 2 — left:797 top:848 size:67px */}
-      <div style={{ position: "absolute", left: "41.51vw", top: "78.52vh", width: "clamp(30px, 3.49vw, 67px)", height: "clamp(30px, 3.49vw, 67px)", zIndex: 3, pointerEvents: "none" }}>
+      <div className="team-dot" style={{ position: "absolute", left: "41.51vw", top: "78.52vh", width: "clamp(30px, 3.49vw, 67px)", height: "clamp(30px, 3.49vw, 67px)", zIndex: 3, pointerEvents: "none" }}>
         <div style={{ position: "absolute", inset: "-74.63%" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="" src={TEAM_DOT1_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
+          { }
+          <Img alt="" src={TEAM_DOT1_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
         </div>
       </div>
 
       {/* Dot 3 — left:1027 top:696 size:67px */}
-      <div style={{ position: "absolute", left: "53.49vw", top: "64.44vh", width: "clamp(30px, 3.49vw, 67px)", height: "clamp(30px, 3.49vw, 67px)", zIndex: 3, pointerEvents: "none" }}>
+      <div className="team-dot" style={{ position: "absolute", left: "53.49vw", top: "64.44vh", width: "clamp(30px, 3.49vw, 67px)", height: "clamp(30px, 3.49vw, 67px)", zIndex: 3, pointerEvents: "none" }}>
         <div style={{ position: "absolute", inset: "-74.63%" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="" src={TEAM_DOT2_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
+          { }
+          <Img alt="" src={TEAM_DOT2_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
         </div>
       </div>
     </section>
@@ -4188,6 +4326,7 @@ function ServicesTeamSection() {
 function ServicesHrTeamSection() {
   return (
     <section
+      className="split-section hrteam-section"
       style={{
         ...sectionStyle,
         backgroundColor: "#ffffff",
@@ -4196,6 +4335,7 @@ function ServicesHrTeamSection() {
     >
       {/* Heading */}
       <p
+        className="hrteam-heading"
         style={{
           position: "absolute",
           left: "3.125vw",
@@ -4216,6 +4356,7 @@ function ServicesHrTeamSection() {
 
       {/* Badge "HR-сопровождение" */}
       <div
+        className="hrteam-badge"
         style={{
           position: "absolute",
           left: "calc(75% + 3.073vw)",
@@ -4249,6 +4390,7 @@ function ServicesHrTeamSection() {
 
       {/* Graph */}
       <div
+        className="hrteam-graph"
         style={{
           position: "absolute",
           left: "0.156vw",
@@ -4263,8 +4405,7 @@ function ServicesHrTeamSection() {
             inset: "-0.25% 0 -0.11% 0",
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+                    <Img
             alt=""
             src={HRTEAM_GRAPH_IMG}
             style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }}
@@ -4275,6 +4416,7 @@ function ServicesHrTeamSection() {
 
       {/* Large horizontal dotted line (rotated -90deg image) */}
       <div
+        className="hrteam-dotline"
         style={{
           position: "absolute",
           left: "-11.563vw",
@@ -4296,8 +4438,7 @@ function ServicesHrTeamSection() {
               height: "191.574vh",
             }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+                        <Img
               alt=""
               src={HRTEAM_DOTLINE_IMG}
               style={{ position: "absolute", display: "block", width: "100%", height: "100%", maxWidth: "none" }}
@@ -4308,6 +4449,7 @@ function ServicesHrTeamSection() {
 
       {/* Vertical dotted line 1 — left:269px top:685px */}
       <div
+        className="hrteam-dotline"
         style={{
           position: "absolute",
           left: "14.010vw",
@@ -4324,8 +4466,7 @@ function ServicesHrTeamSection() {
         <div style={{ transform: "rotate(-90deg)", flexShrink: 0 }}>
           <div style={{ position: "relative", width: "0.938vw", height: "37.344vw" }}>
             <div style={{ position: "absolute", inset: "-0.28% -27.78% -0.7% -27.78%" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+                            <Img
                 alt=""
                 src={HRTEAM_DOTLINE1_IMG}
                 style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }}
@@ -4337,6 +4478,7 @@ function ServicesHrTeamSection() {
 
       {/* Vertical dotted line 2 — left:calc(25%+254px) top:503px */}
       <div
+        className="hrteam-dotline"
         style={{
           position: "absolute",
           left: "calc(25% + 13.229vw)",
@@ -4353,8 +4495,7 @@ function ServicesHrTeamSection() {
         <div style={{ transform: "rotate(-90deg)", flexShrink: 0 }}>
           <div style={{ position: "relative", width: "0.938vw", height: "37.344vw" }}>
             <div style={{ position: "absolute", inset: "-0.28% -27.78% -0.7% -27.78%" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+                            <Img
                 alt=""
                 src={HRTEAM_DOTLINE2_IMG}
                 style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }}
@@ -4366,6 +4507,7 @@ function ServicesHrTeamSection() {
 
       {/* Vertical dotted line 3 — left:calc(50%+179px) top:344px */}
       <div
+        className="hrteam-dotline"
         style={{
           position: "absolute",
           left: "calc(50% + 9.323vw)",
@@ -4382,8 +4524,7 @@ function ServicesHrTeamSection() {
         <div style={{ transform: "rotate(-90deg)", flexShrink: 0 }}>
           <div style={{ position: "relative", width: "0.938vw", height: "37.344vw" }}>
             <div style={{ position: "absolute", inset: "-0.28% -27.78% -0.7% -27.78%" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+                            <Img
                 alt=""
                 src={HRTEAM_DOTLINE1_IMG}
                 style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }}
@@ -4395,6 +4536,7 @@ function ServicesHrTeamSection() {
 
       {/* Text label 1 — "Разрабатываем систему адаптации" left:calc(50%+38px) top:427px */}
       <p
+        className="hrteam-label"
         style={{
           position: "absolute",
           left: "calc(50% + 1.979vw)",
@@ -4416,6 +4558,7 @@ function ServicesHrTeamSection() {
 
       {/* Text label 2 — "Сильная команда, которая растет вместе с бизнесом" left:calc(75%-32px) top:231px */}
       <p
+        className="hrteam-label"
         style={{
           position: "absolute",
           left: "calc(75% - 1.667vw)",
@@ -4437,6 +4580,7 @@ function ServicesHrTeamSection() {
 
       {/* Text label 3 — "Подбираем новых сотрудников по мере роста" left:60px top:766px */}
       <p
+        className="hrteam-label"
         style={{
           position: "absolute",
           left: "3.125vw",
@@ -4458,6 +4602,7 @@ function ServicesHrTeamSection() {
 
       {/* Text label 4 — "Развиваем действующую команду" left:calc(25%+64px) top:600px */}
       <p
+        className="hrteam-label"
         style={{
           position: "absolute",
           left: "calc(25% + 3.333vw)",
@@ -4480,153 +4625,288 @@ function ServicesHrTeamSection() {
   );
 }
 
-function ContactsSection() {
-  const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
 
-  const contacts = [
-    { label: "Телеграм", value: "@prostranstvo_mp", href: "https://t.me/prostranstvo_mp" },
-    { label: "Почта", value: "hello@prostranstvo.ru", href: "mailto:hello@prostranstvo.ru" },
-    { label: "Тг-канал", value: "@prostranstvo_channel", href: "https://t.me/prostranstvo_channel" },
-    { label: "Телефон", value: "+7 (999) 000-00-00", href: "tel:+79990000000" },
-  ];
+
+
+const FAQ_ITEMS = [
+  {
+    q: "Сколько стоят ваши услуги?",
+    a: "Стоимость зависит от набора задач и объёма работ. Начинаем с бесплатного разбора кабинета — после него предлагаем конкретный план и называем цену. Никаких скрытых платежей, всё фиксируется в договоре.",
+  },
+  {
+    q: "С какими маркетплейсами вы работаете?",
+    a: "Работаем с Wildberries и Ozon — это основные площадки. Также помогаем с выходом на Яндекс Маркет и внешние каналы продаж: собственный сайт, соцсети, оптовые клиенты.",
+  },
+  {
+    q: "Как быстро будет виден результат?",
+    a: "Первые сдвиги по CTR и позициям — уже в первые 2–3 недели. Выход на стабильный рост выручки — в среднем через 1.5–2 месяца. Всё зависит от исходного состояния кабинета и скорости внедрения изменений.",
+  },
+  {
+    q: "Что входит в бесплатный разбор?",
+    a: "30-минутная сессия: анализируем ваш кабинет, смотрим рекламу, карточки, юнит-экономику. По итогу показываем конкретные точки роста и что мешает продавать больше прямо сейчас.",
+  },
+  {
+    q: "Нужно ли нам самим участвовать в процессе?",
+    a: "Минимально — только согласование ключевых решений и доступ к кабинету. Мы берём операционку на себя: аналитику, тексты, рекламу, отчёты. Ваша задача — видеть результат, а не тонуть в рутине.",
+  },
+  {
+    q: "Вы работаете с новичками на маркетплейсах?",
+    a: "Да, работаем как с теми, кто только выходит на площадку, так и с продавцами с оборотом десятки миллионов. Подход адаптируем под задачу: запуск с нуля или масштабирование существующего бизнеса.",
+  },
+];
+
+function FaqSection() {
+  const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
+  const ACCENT = "#0ABAB5";
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section style={{
+    <section className="section-faq" style={{
       ...sectionStyle,
-      minHeight: "max(100svh, 720px)",
-      background: "linear-gradient(160deg, #071518 0%, #0D2526 60%, #071518 100%)",
-      display: "flex",
-      alignItems: "center",
+      minHeight: "max(100svh, 760px)",
+      backgroundColor: "#071518",
     }}>
-      {/* Teal glow top-left */}
-      <div style={{ position: "absolute", width: "60vw", height: "60vw", left: "-20vw", top: "-20vw", background: "radial-gradient(circle, rgba(10,186,181,0.1) 0%, transparent 65%)", pointerEvents: "none" }} />
-      {/* Teal glow bottom-right */}
-      <div style={{ position: "absolute", width: "50vw", height: "50vw", right: "-10vw", bottom: "-15vw", background: "radial-gradient(circle, rgba(10,186,181,0.06) 0%, transparent 65%)", pointerEvents: "none" }} />
+      {/* Ambient glow */}
+      <div style={{ position: "absolute", right: "-5vw", top: "10vh", width: "50vw", height: "50vw", background: "radial-gradient(circle, rgba(10,186,181,0.07) 0%, transparent 65%)", pointerEvents: "none" }} />
 
+      {/* Dot grid */}
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "radial-gradient(circle, rgba(10,186,181,0.10) 1px, transparent 1px)", backgroundSize: "40px 40px", opacity: 0.3 }} />
+
+      {/* Badge */}
+      <div style={{ position: "absolute", top: "clamp(30px, 5.56vh, 60px)", right: "3.125vw", display: "flex", alignItems: "center", padding: "clamp(8px, 1.11vh, 12px) clamp(10px, 0.83vw, 16px)", borderRadius: "300px", background: "rgba(10,186,181,0.10)", border: "1px solid rgba(10,186,181,0.3)", backdropFilter: "blur(15px)", WebkitBackdropFilter: "blur(15px)" }}>
+        <p style={{ fontFamily: font, fontWeight: 400, fontSize: "clamp(10px, 1.302vw, 25px)", lineHeight: 1, letterSpacing: "-0.035em", color: ACCENT, textTransform: "uppercase", whiteSpace: "nowrap", margin: 0 }}>
+          FAQ
+        </p>
+      </div>
+
+      {/* Title — left column */}
+      <h2 style={{ position: "absolute", left: "3.125vw", top: "clamp(30px, 5.65vh, 61px)", width: "min(28vw, 520px)", fontFamily: font, fontWeight: 400, fontSize: "clamp(28px, 4.167vw, 80px)", lineHeight: 0.9, letterSpacing: "-0.035em", color: "#ffffff", margin: 0, whiteSpace: "pre-line" }}>
+        {"Частые\nвопросы"}
+      </h2>
+
+      {/* Subtitle */}
+      <p style={{ position: "absolute", left: "3.125vw", top: "clamp(185px, 26vh, 280px)", width: "min(26vw, 480px)", fontFamily: font, fontWeight: 400, fontSize: "clamp(11px, 1.04vw, 20px)", lineHeight: 1.5, letterSpacing: "-0.02em", color: "rgba(255,255,255,0.35)", margin: 0 }}>
+        Если не нашли ответ — просто напишите нам
+      </p>
+
+      {/* Accordion — right column */}
       <div style={{
-        position: "relative",
-        zIndex: 1,
-        width: "min(1400px, calc(100vw - 80px))",
-        margin: "0 auto",
-        paddingTop: "clamp(60px, 8vh, 100px)",
-        paddingBottom: "clamp(60px, 8vh, 100px)",
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        columnGap: "clamp(40px, 6vw, 120px)",
-        alignItems: "center",
+        position: "absolute",
+        left: "clamp(260px, 36vw, 700px)",
+        right: "3.125vw",
+        top: "clamp(30px, 5.65vh, 61px)",
+        bottom: "clamp(40px, 7.41vh, 80px)",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
       }}>
-
-        {/* Left: heading */}
-        <div>
-          <p style={{
-            fontFamily: font,
-            fontSize: "clamp(11px, 0.83vw, 16px)",
-            color: "#0ABAB5",
-            letterSpacing: "0.08em",
-            textTransform: "uppercase" as const,
-            marginBottom: "clamp(16px, 2.5vh, 28px)",
-            margin: "0 0 clamp(16px, 2.5vh, 28px) 0",
-          }}>
-            Контакты
-          </p>
-          <h2 style={{
-            fontFamily: font,
-            fontWeight: 400,
-            fontSize: "clamp(36px, 4.17vw, 80px)",
-            lineHeight: 0.95,
-            letterSpacing: "-0.04em",
-            color: "#ffffff",
-            margin: "0 0 clamp(16px, 3vh, 32px) 0",
-          }}>
-            Свяжитесь с нами
-          </h2>
-          <p style={{
-            fontFamily: font,
-            fontWeight: 400,
-            fontSize: "clamp(14px, 1.04vw, 20px)",
-            lineHeight: 1.5,
-            color: "rgba(255,255,255,0.45)",
-            margin: 0,
-          }}>
-            Ответим на вопросы, расскажем об условиях<br />работы и запишем на бесплатный разбор
-          </p>
-        </div>
-
-        {/* Right: contacts + button */}
-        <div style={{ display: "flex", flexDirection: "column" as const, gap: "clamp(24px, 4vh, 40px)" }}>
-
-          {/* Contact list */}
-          <div style={{ display: "flex", flexDirection: "column" as const, gap: "clamp(16px, 2.5vh, 24px)" }}>
-            {contacts.map(({ label, value, href }) => (
-              <a key={label} href={href} style={{ display: "flex", alignItems: "center", gap: "clamp(14px, 1.25vw, 24px)", textDecoration: "none" }}>
-                {/* Teal dot */}
-                <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#0ABAB5", flexShrink: 0 }} />
-                <div style={{ display: "flex", flexDirection: "column" as const, gap: 2 }}>
-                  <span style={{ fontFamily: font, fontSize: "clamp(10px, 0.73vw, 14px)", color: "rgba(255,255,255,0.35)", letterSpacing: "0.06em", textTransform: "uppercase" as const, lineHeight: 1 }}>
-                    {label}
-                  </span>
-                  <span style={{ fontFamily: font, fontSize: "clamp(16px, 1.46vw, 28px)", color: "#ffffff", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
-                    {value}
-                  </span>
+        {FAQ_ITEMS.map((item, i) => {
+          const isOpen = openIndex === i;
+          return (
+            <div key={i}>
+              {/* Question row */}
+              <button
+                onClick={() => setOpenIndex(isOpen ? null : i)}
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "clamp(12px, 2vw, 32px)",
+                  padding: "clamp(16px, 2.59vh, 28px) 0",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  textAlign: "left",
+                }}
+              >
+                <span style={{
+                  fontFamily: font,
+                  fontWeight: 400,
+                  fontSize: "clamp(14px, 1.563vw, 30px)",
+                  lineHeight: 1.15,
+                  letterSpacing: "-0.03em",
+                  color: isOpen ? "#ffffff" : "rgba(255,255,255,0.75)",
+                  transition: "color 0.2s",
+                  flex: 1,
+                }}>
+                  {item.q}
+                </span>
+                {/* Plus / minus icon */}
+                <div style={{
+                  width: "clamp(28px, 2.083vw, 40px)",
+                  height: "clamp(28px, 2.083vw, 40px)",
+                  borderRadius: "50%",
+                  border: `1px solid ${isOpen ? ACCENT : "rgba(255,255,255,0.15)"}`,
+                  background: isOpen ? `rgba(10,186,181,0.12)` : "transparent",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                  transition: "border-color 0.2s, background 0.2s",
+                }}>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
+                    style={{ transition: "transform 0.3s ease", transform: isOpen ? "rotate(45deg)" : "rotate(0deg)" }}>
+                    <path d="M7 2v10M2 7h10" stroke={isOpen ? ACCENT : "rgba(255,255,255,0.5)"} strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
                 </div>
-              </a>
-            ))}
-          </div>
+              </button>
 
-          {/* CTA button */}
-          <div style={{
-            border: "1px solid rgba(10,186,181,0.4)",
-            borderRadius: "clamp(12px, 1.25vw, 24px)",
-            padding: "clamp(20px, 3vh, 36px) clamp(24px, 2.5vw, 48px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "24px",
-            background: "rgba(10,186,181,0.04)",
-          }}>
-            <div>
-              <p style={{ fontFamily: font, fontWeight: 400, fontSize: "clamp(18px, 1.56vw, 30px)", letterSpacing: "-0.03em", color: "#ffffff", margin: "0 0 6px 0", lineHeight: 1.1 }}>
-                Готовы начать?
-              </p>
-              <p style={{ fontFamily: font, fontSize: "clamp(12px, 0.83vw, 16px)", color: "rgba(255,255,255,0.4)", margin: 0, lineHeight: 1.4 }}>
-                Бесплатный разбор кабинета за 30 минут
-              </p>
+              {/* Answer */}
+              <div style={{
+                overflow: "hidden",
+                maxHeight: isOpen ? "300px" : "0px",
+                transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+              }}>
+                <p style={{
+                  fontFamily: font,
+                  fontWeight: 400,
+                  fontSize: "clamp(12px, 1.04vw, 20px)",
+                  lineHeight: 1.65,
+                  letterSpacing: "-0.02em",
+                  color: "rgba(255,255,255,0.45)",
+                  margin: 0,
+                  paddingBottom: "clamp(16px, 2.59vh, 28px)",
+                  paddingRight: "clamp(40px, 4vw, 72px)",
+                }}>
+                  {item.a}
+                </p>
+              </div>
+
+              {/* Divider */}
+              <div style={{
+                height: "1px",
+                background: isOpen
+                  ? "linear-gradient(90deg, rgba(10,186,181,0.35) 0%, rgba(10,186,181,0.1) 60%, transparent 100%)"
+                  : "rgba(255,255,255,0.07)",
+                transition: "background 0.3s",
+              }} />
             </div>
-            <a href="/form" style={{
-              fontFamily: font,
-              fontSize: "clamp(13px, 0.94vw, 18px)",
-              fontWeight: 400,
-              color: "#071518",
-              background: "#0ABAB5",
-              border: "none",
-              borderRadius: "clamp(8px, 0.83vw, 16px)",
-              padding: "clamp(12px, 1.5vh, 18px) clamp(20px, 1.875vw, 36px)",
-              cursor: "pointer",
-              whiteSpace: "nowrap" as const,
-              letterSpacing: "-0.02em",
-              flexShrink: 0,
-              textDecoration: "none",
-              display: "inline-block",
-            }}>
-              Заполнить заявку
-            </a>
-          </div>
-
-        </div>
+          );
+        })}
       </div>
     </section>
   );
 }
 
+function WorkWithUsSection() {
+  const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
+  const ACCENT = "#0ABAB5";
 
+  const perks = [
+    { num: "01", title: "Бесплатный разбор", desc: "Проведём аудит кабинета, найдём точки роста и покажем, где теряется выручка" },
+    { num: "02", title: "Конкретный план", desc: "Не абстрактные рекомендации — чёткий план действий на 30 дней с цифрами" },
+    { num: "03", title: "Команда под задачу", desc: "Аналитик, менеджер, дизайнер — работаем как ваш отдел, без найма в штат" },
+  ];
+
+  const stats = [
+    { value: "50+", label: "кейсов на WB и Ozon" },
+    { value: "+200%", label: "средний рост выручки" },
+    { value: "30 мин", label: "бесплатный разбор" },
+  ];
+
+  return (
+    <section className="section-cta" style={{
+      ...sectionStyle,
+      minHeight: "max(100svh, 760px)",
+      backgroundColor: "#070f0c",
+    }}>
+      {/* Ambient glows */}
+      <div style={{ position: "absolute", left: "-10vw", top: "-10vh", width: "60vw", height: "60vw", background: "radial-gradient(circle, rgba(10,186,181,0.10) 0%, transparent 65%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", right: "-5vw", bottom: "0", width: "45vw", height: "45vw", background: "radial-gradient(circle, rgba(10,186,181,0.06) 0%, transparent 65%)", pointerEvents: "none" }} />
+
+      {/* Dot grid */}
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "radial-gradient(circle, rgba(10,186,181,0.12) 1px, transparent 1px)", backgroundSize: "40px 40px", opacity: 0.35 }} />
+
+      {/* Badge */}
+      <div style={{ position: "absolute", top: "clamp(30px, 5.56vh, 60px)", right: "3.125vw", display: "flex", alignItems: "center", padding: "clamp(8px, 1.11vh, 12px) clamp(10px, 0.83vw, 16px)", borderRadius: "300px", background: `rgba(10,186,181,0.10)`, border: `1px solid rgba(10,186,181,0.3)`, backdropFilter: "blur(15px)", WebkitBackdropFilter: "blur(15px)" }}>
+        <p style={{ fontFamily: font, fontWeight: 400, fontSize: "clamp(10px, 1.302vw, 25px)", lineHeight: 1, letterSpacing: "-0.035em", color: ACCENT, textTransform: "uppercase", whiteSpace: "nowrap", margin: 0 }}>
+          начнём вместе
+        </p>
+      </div>
+
+      {/* Headline */}
+      <h2 style={{ position: "absolute", left: "3.125vw", top: "clamp(30px, 5.65vh, 61px)", width: "min(52vw, 1000px)", fontFamily: font, fontWeight: 400, fontSize: "clamp(28px, 4.688vw, 90px)", lineHeight: 0.9, letterSpacing: "-0.035em", color: "#ffffff", margin: 0, whiteSpace: "pre-line" }}>
+        {"Готовы увеличить\nвашу выручку?"}
+      </h2>
+
+      {/* Subline */}
+      <p style={{ position: "absolute", left: "3.125vw", top: "clamp(200px, 30vh, 325px)", width: "min(42vw, 800px)", fontFamily: font, fontWeight: 400, fontSize: "clamp(12px, 1.25vw, 24px)", lineHeight: 1.45, letterSpacing: "-0.025em", color: "rgba(255,255,255,0.42)", margin: 0 }}>
+        Оставьте заявку — проведём разбор кабинета бесплатно, покажем где теряется прибыль и что с этим делать
+      </p>
+
+      {/* Perks list */}
+      <div style={{ position: "absolute", left: "3.125vw", top: "clamp(290px, 44vh, 480px)", width: "min(46vw, 880px)", display: "flex", flexDirection: "column", gap: "clamp(10px, 1.85vh, 20px)" }}>
+        {perks.map(({ num, title, desc }) => (
+          <div key={num} style={{ display: "flex", alignItems: "flex-start", gap: "clamp(14px, 1.56vw, 30px)", paddingBottom: "clamp(10px, 1.85vh, 20px)", borderBottom: "1px solid rgba(10,186,181,0.1)" }}>
+            <span style={{ fontFamily: font, fontWeight: 400, fontSize: "clamp(11px, 1.04vw, 20px)", lineHeight: 1, letterSpacing: "-0.04em", color: ACCENT, opacity: 0.5, flexShrink: 0, width: "3ch", marginTop: "2px" }}>{num}</span>
+            <div>
+              <p style={{ fontFamily: font, fontWeight: 400, fontSize: "clamp(13px, 1.25vw, 24px)", lineHeight: 1.1, letterSpacing: "-0.03em", color: "#ffffff", margin: "0 0 clamp(4px,0.56vh,6px) 0" }}>{title}</p>
+              <p style={{ fontFamily: font, fontWeight: 400, fontSize: "clamp(10px, 0.938vw, 18px)", lineHeight: 1.4, letterSpacing: "-0.02em", color: "rgba(255,255,255,0.4)", margin: 0 }}>{desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Stats — right side */}
+      <div className="cta-stats" style={{ position: "absolute", right: "3.125vw", top: "50%", transform: "translateY(-50%)", display: "flex", flexDirection: "column", gap: "clamp(24px, 5.56vh, 60px)", alignItems: "flex-end" }}>
+        {stats.map(({ value, label }) => (
+          <div key={label} style={{ textAlign: "right" }}>
+            <p style={{ fontFamily: font, fontWeight: 400, fontSize: "clamp(36px, 5.208vw, 100px)", lineHeight: 1, letterSpacing: "-0.04em", color: ACCENT, margin: "0 0 clamp(4px,0.56vh,6px) 0" }}>{value}</p>
+            <p style={{ fontFamily: font, fontWeight: 400, fontSize: "clamp(11px, 1.04vw, 20px)", lineHeight: 1.2, letterSpacing: "-0.02em", color: "rgba(255,255,255,0.35)", margin: 0 }}>{label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Divider line */}
+      <div style={{ position: "absolute", left: "3.125vw", right: "3.125vw", bottom: "clamp(120px, 20vh, 200px)", height: "1px", background: "linear-gradient(90deg, rgba(10,186,181,0.3) 0%, rgba(10,186,181,0.1) 60%, transparent 100%)" }} />
+
+      {/* CTA button — bottom left */}
+      <div style={{ position: "absolute", left: "3.125vw", bottom: "clamp(40px, 7.41vh, 80px)", display: "flex", alignItems: "center", gap: "clamp(16px, 2vw, 32px)" }}>
+        <a
+          href="/form"
+          className="work-with-us-btn"
+          style={{
+            display: "inline-flex", alignItems: "center", gap: "12px",
+            padding: "clamp(14px, 2vh, 22px) clamp(32px, 3.125vw, 60px)",
+            borderRadius: "100px",
+            background: ACCENT,
+            color: "#071518",
+            fontFamily: font,
+            fontWeight: 500,
+            fontSize: "clamp(14px, 1.25vw, 24px)",
+            letterSpacing: "-0.03em",
+            textDecoration: "none",
+            whiteSpace: "nowrap",
+            transition: "box-shadow 0.25s ease, transform 0.2s ease",
+          }}
+        >
+          Оставить заявку
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M3 9h12M11 5l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </a>
+        <p style={{ fontFamily: font, fontSize: "clamp(11px, 0.938vw, 18px)", color: "rgba(255,255,255,0.3)", letterSpacing: "-0.01em", margin: 0 }}>
+          Ответим в течение 15 минут
+        </p>
+      </div>
+
+      <style>{`
+        .work-with-us-btn:hover {
+          box-shadow: 0 0 0 2px rgba(10,186,181,0.5), 0 0 40px rgba(10,186,181,0.6), 0 0 80px rgba(10,186,181,0.25);
+          transform: translateY(-2px);
+        }
+      `}</style>
+    </section>
+  );
+}
 
 function OrbitalSection() {
   return (
-    <section style={{
+    <section id="cases" style={{
       position: "relative",
       background: "linear-gradient(180deg, #071518 0%, #0a1f22 50%, #071518 100%)",
-      padding: "clamp(60px, 10vh, 120px) 0",
-      overflow: "hidden",
+      padding: "clamp(60px, 10vh, 120px) clamp(20px, 4vw, 60px)",
     }}>
       {/* dot grid */}
       <div style={{
@@ -4649,6 +4929,35 @@ function OrbitalSection() {
   );
 }
 
+void [
+  INFINITY_IMG,
+  CaseRevenueSection,
+  CaseScreenshotSection,
+  SERVICES_INFINITY_IMG,
+  EXT_STRIP1_IMG,
+  EXT_STRIP2_IMG,
+  AI_LOGO_IMG,
+  PODBOR_COVER_INFINITY_IMG,
+  CHAIRS_WB_INFINITY_IMG,
+  CHAIRS_INFINITY_IMG,
+  SEASONAL_INFINITY_IMG,
+  Case1CIntroSection,
+  Case1CStepsSection,
+  CaseAIIntroSection,
+  CaseAIStepsSection,
+  CaseCRMIntroSection,
+  CaseCRMStepsSection,
+  CaseWarehouseBuildIntroSection,
+  CaseWarehouseBuildScreenSection,
+  CaseWarehouseSection,
+  CaseWarehousePlanSection,
+  CaseChairsWbSection,
+  CaseChairsScreenshotSection,
+  CaseChairsSection,
+  CaseSeasonalScreenshotSection,
+  CaseSeasonalSection,
+];
+
 export default function Page() {
   return (
     <main style={{ position: "relative", width: "100%", backgroundColor: "#071518" }}>
@@ -4659,21 +4968,6 @@ export default function Page() {
       <FadeIn><WhyChooseUsSection /></FadeIn>
       <FadeIn><CasesSection /></FadeIn>
       <FadeIn><OrbitalSection /></FadeIn>
-      <FadeIn><CaseRevenueSection /></FadeIn>
-      <FadeIn><CaseScreenshotSection /></FadeIn>
-      <FadeIn><CaseSeasonalSection /></FadeIn>
-      <FadeIn><CaseSeasonalScreenshotSection /></FadeIn>
-      <FadeIn><CaseChairsSection /></FadeIn>
-      <FadeIn><CaseChairsScreenshotSection /></FadeIn>
-      <FadeIn><CaseChairsWbSection /></FadeIn>
-      <FadeIn><Case1CIntroSection /></FadeIn>
-      <FadeIn><Case1CStepsSection /></FadeIn>
-      <FadeIn><CaseAIIntroSection /></FadeIn>
-      <FadeIn><CaseAIStepsSection /></FadeIn>
-      <FadeIn><CaseCRMIntroSection /></FadeIn>
-      <FadeIn><CaseCRMStepsSection /></FadeIn>
-      <FadeIn><CaseWarehouseBuildIntroSection /></FadeIn>
-      <FadeIn><CaseWarehouseBuildScreenSection /></FadeIn>
       <FadeIn><ServicesSection /></FadeIn>
       <FadeIn><ServicesPodborSection /></FadeIn>
       <FadeIn><ServicesAuditSection /></FadeIn>
@@ -4683,6 +4977,8 @@ export default function Page() {
       <FadeIn><ServicesExternalSection /></FadeIn>
       <FadeIn><ServicesTeamSection /></FadeIn>
       <FadeIn><ServicesHrTeamSection /></FadeIn>
+      <FadeIn><WorkWithUsSection /></FadeIn>
+      <FadeIn><FaqSection /></FadeIn>
       <FadeIn><ContactsSection /></FadeIn>
     </main>
   );

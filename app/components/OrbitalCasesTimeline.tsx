@@ -1,7 +1,7 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { TrendingUp, ShoppingBag, BarChart2, Database, Cpu, Users, Warehouse } from "lucide-react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const CASES = [
   {
@@ -94,343 +94,344 @@ const ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: stri
 };
 
 const FONT = "Helvetica Neue, Helvetica, Arial, sans-serif";
-const RADIUS = 220;
 
-function calculateNodePosition(index: number, total: number, rotationAngle: number) {
+function calculateNodePosition(index: number, total: number, rotationAngle: number, radius: number) {
   const baseAngle = (index / total) * 2 * Math.PI;
   const angle = baseAngle + (rotationAngle * Math.PI) / 180;
-  const x = Math.cos(angle) * RADIUS;
-  const y = Math.sin(angle) * RADIUS;
-  // zIndex based on y position (front/back)
-  const zIndex = Math.round((y + RADIUS) / (2 * RADIUS) * 10) + 1;
-  // opacity based on y position
-  const opacity = 0.6 + ((y + RADIUS) / (2 * RADIUS)) * 0.4;
+  const x = Math.cos(angle) * radius;
+  const y = Math.sin(angle) * radius;
+  const zIndex = Math.round((y + radius) / (2 * radius) * 10) + 1;
+  const opacity = 0.6 + ((y + radius) / (2 * radius)) * 0.4;
   return { x, y, zIndex, opacity };
 }
 
 export default function OrbitalCasesTimeline() {
+  const router = useRouter();
   const [rotationAngle, setRotationAngle] = useState(0);
-  const [autoRotate, setAutoRotate] = useState(true);
-  const [activeId, setActiveId] = useState<number | null>(null);
-  const [expandedId, setExpandedId] = useState<number | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const rotationRef = useRef(0);
+  const orbitRef = useRef<HTMLDivElement>(null);
 
+  // Detect mobile
   useEffect(() => {
-    if (autoRotate) {
-      intervalRef.current = setInterval(() => {
-        setRotationAngle((prev) => (prev + 0.3) % 360);
-      }, 50);
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  const RADIUS = isMobile ? 130 : 220;
+  const ORBIT_SIZE = isMobile ? 310 : 560;
+  const NODE_HIT_RADIUS = isMobile ? 28 : 36;
+
+  // Вращение — не останавливается никогда
+  useEffect(() => {
+    const id = setInterval(() => {
+      rotationRef.current = (rotationRef.current + 0.3) % 360;
+      setRotationAngle(rotationRef.current);
+    }, 50);
+    return () => clearInterval(id);
+  }, []);
+
+  const clearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!orbitRef.current) return;
+    const rect = orbitRef.current.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const mx = e.clientX - cx;
+    const my = e.clientY - cy;
+
+    let found: number | null = null;
+    for (let i = 0; i < CASES.length; i++) {
+      const { x, y } = calculateNodePosition(i, CASES.length, rotationRef.current, RADIUS);
+      const dist = Math.sqrt((mx - x) ** 2 + (my - y) ** 2);
+      if (dist < NODE_HIT_RADIUS) {
+        found = CASES[i].id;
+        break;
       }
     }
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [autoRotate]);
 
-  const handleNodeClick = (id: number) => {
-    if (expandedId === id) {
-      setExpandedId(null);
-      setActiveId(null);
-      setAutoRotate(true);
+    if (found !== null) {
+      if (clearTimerRef.current) { clearTimeout(clearTimerRef.current); clearTimerRef.current = null; }
+      setHoveredId(found);
     } else {
-      setExpandedId(id);
-      setActiveId(id);
-      setAutoRotate(false);
+      if (!clearTimerRef.current) {
+        clearTimerRef.current = setTimeout(() => {
+          setHoveredId(null);
+          clearTimerRef.current = null;
+        }, 400);
+      }
     }
-  };
+  }, [RADIUS, NODE_HIT_RADIUS]);
 
-  const handleBackgroundClick = () => {
-    setExpandedId(null);
-    setActiveId(null);
-    setAutoRotate(true);
-  };
+  const handleMouseLeave = useCallback(() => {
+    if (!clearTimerRef.current) {
+      clearTimerRef.current = setTimeout(() => {
+        setHoveredId(null);
+        clearTimerRef.current = null;
+      }, 800);
+    }
+  }, []);
 
-  return (
-    <div
-      style={{
-        position: "relative",
-        width: "100%",
-        maxWidth: 900,
-        height: 600,
-        margin: "0 auto",
-        overflow: "visible",
-        cursor: expandedId !== null ? "pointer" : "default",
-      }}
-      onClick={handleBackgroundClick}
-    >
-      {/* Orbit ring */}
-      <div
-        style={{
-          position: "absolute",
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
-          width: RADIUS * 2,
-          height: RADIUS * 2,
-          borderRadius: "50%",
-          border: "1px solid rgba(10,186,181,0.15)",
-          pointerEvents: "none",
-        }}
-      />
+  const handleMouseEnterCard = useCallback(() => {
+    if (clearTimerRef.current) { clearTimeout(clearTimerRef.current); clearTimerRef.current = null; }
+  }, []);
 
-      {/* Second decorative ring */}
-      <div
-        style={{
-          position: "absolute",
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
-          width: RADIUS * 2 + 60,
-          height: RADIUS * 2 + 60,
-          borderRadius: "50%",
-          border: "1px solid rgba(10,186,181,0.06)",
-          pointerEvents: "none",
-        }}
-      />
+  // Mobile: tap to select
+  const handleNodeTap = useCallback((id: number) => {
+    setSelectedId(prev => prev === id ? null : id);
+  }, []);
 
-      {/* Central sphere */}
-      <div
-        style={{
-          position: "absolute",
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 64,
-          height: 64,
-          borderRadius: "50%",
-          background: "radial-gradient(circle at 35% 35%, #1de8e2, #0ABAB5 40%, #076e6b)",
-          boxShadow: "0 0 30px rgba(10,186,181,0.5), 0 0 60px rgba(10,186,181,0.2)",
-          animation: "orbitalPulse 2.5s ease-in-out infinite",
-          zIndex: 20,
-          pointerEvents: "none",
-        }}
-      />
+  const activeId = isMobile ? selectedId : hoveredId;
+  const activeCase = CASES.find((c) => c.id === activeId) ?? null;
 
-      {/* Orbital nodes */}
-      {CASES.map((caseItem, index) => {
-        const { x, y, zIndex, opacity } = calculateNodePosition(index, CASES.length, rotationAngle);
-        const isActive = activeId === caseItem.id;
-        const isExpanded = expandedId === caseItem.id;
-        const IconComp = ICON_MAP[caseItem.icon];
+  // Mobile cards list
+  if (isMobile) {
+    return (
+      <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: 0 }}>
+        {/* Orbit */}
+        <div
+          ref={orbitRef}
+          style={{
+            position: "relative",
+            width: ORBIT_SIZE,
+            height: ORBIT_SIZE,
+            flexShrink: 0,
+            cursor: activeCase ? "pointer" : "default",
+            margin: "0 auto",
+          }}
+          onClick={(e) => {
+            if (!orbitRef.current) return;
+            const rect = orbitRef.current.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const mx = e.clientX - cx;
+            const my = e.clientY - cy;
+            for (let i = 0; i < CASES.length; i++) {
+              const { x, y } = calculateNodePosition(i, CASES.length, rotationRef.current, RADIUS);
+              const dist = Math.sqrt((mx - x) ** 2 + (my - y) ** 2);
+              if (dist < NODE_HIT_RADIUS + 10) {
+                handleNodeTap(CASES[i].id);
+                return;
+              }
+            }
+            // Click outside nodes — close card
+            setSelectedId(null);
+          }}
+        >
+          {/* Orbit rings */}
+          <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", width: RADIUS * 2, height: RADIUS * 2, borderRadius: "50%", border: "1px solid rgba(10,186,181,0.15)", pointerEvents: "none" }} />
+          <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", width: RADIUS * 2 + 40, height: RADIUS * 2 + 40, borderRadius: "50%", border: "1px solid rgba(10,186,181,0.06)", pointerEvents: "none" }} />
 
-        // Card positioning logic: keep within container
-        const cardLeft = x > 0 ? "calc(100% + 12px)" : "auto";
-        const cardRight = x <= 0 ? "calc(100% + 12px)" : "auto";
-        const cardTop = y > 50 ? "auto" : "0";
-        const cardBottom = y > 50 ? "0" : "auto";
+          {/* Central sphere */}
+          <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", width: 48, height: 48, borderRadius: "50%", background: "radial-gradient(circle at 35% 35%, #1de8e2, #0ABAB5 40%, #076e6b)", boxShadow: "0 0 24px rgba(10,186,181,0.5), 0 0 48px rgba(10,186,181,0.2)", animation: "orbitalPulse 2.5s ease-in-out infinite", zIndex: 20, pointerEvents: "none" }} />
 
-        return (
-          <div
-            key={caseItem.id}
-            style={{
-              position: "absolute",
-              left: `calc(50% + ${x}px)`,
-              top: `calc(50% + ${y}px)`,
-              transform: `translate(-50%, -50%) scale(${isActive ? 1.2 : 1})`,
-              zIndex: isExpanded ? 100 : zIndex + 10,
-              opacity: isExpanded || !expandedId ? opacity : 0.3,
-              transition: "transform 0.3s ease, opacity 0.3s ease",
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleNodeClick(caseItem.id);
-            }}
-          >
-            {/* Node circle */}
-            <div
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: "50%",
-                background: isActive
-                  ? `radial-gradient(circle at 35% 35%, ${caseItem.color}cc, ${caseItem.color}66)`
-                  : "rgba(7,21,24,0.9)",
-                border: `2px solid ${caseItem.color}`,
-                boxShadow: isActive
-                  ? `0 0 20px ${caseItem.color}88, 0 0 40px ${caseItem.color}44`
-                  : `0 0 10px ${caseItem.color}44`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                transition: "all 0.3s ease",
-              }}
-            >
-              <IconComp size={20} color={caseItem.color} />
-            </div>
+          {/* Nodes */}
+          {CASES.map((caseItem, index) => {
+            const { x, y, zIndex, opacity } = calculateNodePosition(index, CASES.length, rotationAngle, RADIUS);
+            const isActive = selectedId === caseItem.id;
+            const IconComp = ICON_MAP[caseItem.icon];
 
-            {/* Tooltip label */}
-            {!isExpanded && (
+            return (
               <div
+                key={caseItem.id}
                 style={{
                   position: "absolute",
-                  top: "calc(100% + 6px)",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  whiteSpace: "nowrap",
-                  fontFamily: FONT,
-                  fontSize: 10,
-                  color: "rgba(255,255,255,0.6)",
+                  left: `calc(50% + ${x}px)`,
+                  top: `calc(50% + ${y}px)`,
+                  transform: `translate(-50%, -50%) scale(${isActive ? 1.25 : 1})`,
+                  zIndex: isActive ? 100 : zIndex + 10,
+                  opacity,
+                  transition: "transform 0.25s ease",
                   pointerEvents: "none",
-                  letterSpacing: "0.03em",
                 }}
               >
-                {caseItem.title}
-              </div>
-            )}
-
-            {/* Expanded card */}
-            {isExpanded && (
-              <div
-                style={{
-                  position: "absolute",
-                  left: cardLeft,
-                  right: cardRight,
-                  top: cardTop,
-                  bottom: cardBottom,
-                  width: 280,
-                  background: "rgba(7,21,24,0.95)",
-                  border: "1px solid rgba(10,186,181,0.3)",
-                  borderRadius: 16,
-                  padding: 20,
-                  backdropFilter: "blur(20px)",
-                  WebkitBackdropFilter: "blur(20px)",
-                  zIndex: 200,
-                  boxShadow: `0 20px 60px rgba(0,0,0,0.8), 0 0 30px ${caseItem.color}22`,
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* Card header */}
-                <div style={{ marginBottom: 12 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <IconComp size={16} color={caseItem.color} />
-                    <span
-                      style={{
-                        fontFamily: FONT,
-                        fontSize: 16,
-                        fontWeight: 600,
-                        color: caseItem.color,
-                        letterSpacing: "-0.02em",
-                      }}
-                    >
-                      {caseItem.title}
-                    </span>
-                  </div>
-                  <p
-                    style={{
-                      fontFamily: FONT,
-                      fontSize: 11,
-                      color: "rgba(255,255,255,0.5)",
-                      margin: 0,
-                      letterSpacing: "0.05em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {caseItem.subtitle}
-                  </p>
+                <div style={{
+                  width: 38, height: 38, borderRadius: "50%",
+                  background: isActive ? `radial-gradient(circle at 35% 35%, ${caseItem.color}cc, ${caseItem.color}66)` : "rgba(7,21,24,0.9)",
+                  border: `2px solid ${caseItem.color}`,
+                  boxShadow: isActive ? `0 0 16px ${caseItem.color}88, 0 0 32px ${caseItem.color}44` : `0 0 8px ${caseItem.color}44`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  transition: "all 0.3s ease",
+                }}>
+                  <IconComp size={16} color={caseItem.color} />
                 </div>
+                <div style={{ position: "absolute", top: "calc(100% + 4px)", left: "50%", transform: "translateX(-50%)", whiteSpace: "nowrap", fontFamily: FONT, fontSize: 9, color: isActive ? caseItem.color : "rgba(255,255,255,0.55)", pointerEvents: "none", letterSpacing: "0.03em", transition: "color 0.3s" }}>
+                  {caseItem.title}
+                </div>
+              </div>
+            );
+          })}
+        </div>
 
-                {/* Description */}
-                <p
-                  style={{
-                    fontFamily: FONT,
-                    fontSize: 12,
-                    color: "rgba(255,255,255,0.75)",
-                    lineHeight: 1.6,
-                    margin: "0 0 16px",
-                    display: "-webkit-box",
-                    WebkitLineClamp: 3,
-                    WebkitBoxOrient: "vertical" as const,
-                    overflow: "hidden",
-                  }}
-                >
-                  {caseItem.description}
-                </p>
+        {/* Hint text */}
+        {!activeCase && (
+          <p style={{ fontFamily: FONT, fontSize: 12, color: "rgba(255,255,255,0.3)", textAlign: "center", margin: "8px 0 0", letterSpacing: "0.04em" }}>
+            Нажмите на кейс
+          </p>
+        )}
 
-                {/* Metrics */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr 1fr",
-                    gap: 8,
-                    marginBottom: 16,
-                  }}
-                >
-                  {caseItem.metrics.map((metric, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        textAlign: "center",
-                        padding: "8px 4px",
-                        background: "rgba(255,255,255,0.04)",
-                        borderRadius: 8,
-                        border: "1px solid rgba(255,255,255,0.08)",
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontFamily: FONT,
-                          fontSize: 14,
-                          fontWeight: 700,
-                          color: caseItem.color,
-                          letterSpacing: "-0.02em",
-                        }}
-                      >
-                        {metric}
-                      </div>
-                      <div
-                        style={{
-                          fontFamily: FONT,
-                          fontSize: 9,
-                          color: "rgba(255,255,255,0.4)",
-                          marginTop: 2,
-                          letterSpacing: "0.03em",
-                        }}
-                      >
-                        {caseItem.metricLabels[i]}
-                      </div>
+        {/* Mobile info card */}
+        <div style={{
+          width: "100%",
+          maxWidth: 380,
+          opacity: activeCase ? 1 : 0,
+          maxHeight: activeCase ? "400px" : "0px",
+          overflow: "hidden",
+          transition: "opacity 0.3s ease, max-height 0.4s ease",
+          padding: activeCase ? "0 16px 20px" : "0 16px",
+        }}>
+          {activeCase && (() => {
+            const IconComp = ICON_MAP[activeCase.icon];
+            return (
+              <div style={{ background: "rgba(7,21,24,0.97)", border: `1px solid ${activeCase.color}44`, borderRadius: 16, padding: 20, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", boxShadow: `0 16px 40px rgba(0,0,0,0.6), 0 0 30px ${activeCase.color}18` }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 20, background: `${activeCase.color}18`, border: `1px solid ${activeCase.color}40`, marginBottom: 12 }}>
+                  <IconComp size={10} color={activeCase.color} />
+                  <span style={{ fontFamily: FONT, fontSize: 10, color: activeCase.color, letterSpacing: "0.08em", textTransform: "uppercase" }}>{activeCase.subtitle}</span>
+                </div>
+                <h3 style={{ fontFamily: FONT, fontWeight: 400, fontSize: 20, letterSpacing: "-0.03em", color: "#fff", margin: "0 0 8px" }}>{activeCase.title}</h3>
+                <p style={{ fontFamily: FONT, fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 1.6, margin: "0 0 14px" }}>{activeCase.description}</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 14, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+                  {activeCase.metrics.map((metric, i) => (
+                    <div key={i} style={{ textAlign: "center" }}>
+                      <div style={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, color: activeCase.color, letterSpacing: "-0.03em" }}>{metric}</div>
+                      <div style={{ fontFamily: FONT, fontSize: 9, color: "rgba(255,255,255,0.35)", marginTop: 3, letterSpacing: "0.02em" }}>{activeCase.metricLabels[i]}</div>
                     </div>
                   ))}
                 </div>
-
-                {/* CTA button */}
-                <Link
-                  href={caseItem.href}
-                  style={{
-                    display: "block",
-                    textAlign: "center",
-                    padding: "10px 16px",
-                    background: `linear-gradient(135deg, ${caseItem.color}22, ${caseItem.color}44)`,
-                    border: `1px solid ${caseItem.color}66`,
-                    borderRadius: 8,
-                    fontFamily: FONT,
-                    fontSize: 12,
-                    fontWeight: 500,
-                    color: caseItem.color,
-                    textDecoration: "none",
-                    letterSpacing: "0.05em",
-                    transition: "all 0.2s ease",
-                  }}
-                  onClick={(e) => e.stopPropagation()}
+                <a
+                  href={activeCase.href}
+                  onClick={(e) => { e.preventDefault(); window.history.replaceState(null, '', '/#cases'); router.push(activeCase.href); }}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "12px 20px", borderRadius: 10, background: activeCase.color, color: "#071518", fontFamily: FONT, fontSize: 14, fontWeight: 500, letterSpacing: "-0.02em", textDecoration: "none", cursor: "pointer" }}
                 >
                   Открыть кейс →
-                </Link>
+                </a>
               </div>
-            )}
-          </div>
-        );
-      })}
+            );
+          })()}
+        </div>
+
+        <style>{`
+          @keyframes orbitalPulse {
+            0%, 100% { box-shadow: 0 0 24px rgba(10,186,181,0.5), 0 0 48px rgba(10,186,181,0.2); }
+            50% { box-shadow: 0 0 40px rgba(10,186,181,0.8), 0 0 80px rgba(10,186,181,0.35); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // Desktop layout
+  return (
+    <div style={{ width: "100%", maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", gap: 40, height: ORBIT_SIZE }}>
+
+      {/* ── Orbit area ── */}
+      <div
+        ref={orbitRef}
+        style={{ position: "relative", flexShrink: 0, width: ORBIT_SIZE, height: ORBIT_SIZE, cursor: activeCase ? "pointer" : "default" }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        onClick={() => {
+          if (activeCase) {
+            window.history.replaceState(null, '', '/#cases');
+            router.push(activeCase.href);
+          }
+        }}
+      >
+        {/* Orbit rings */}
+        <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", width: RADIUS * 2, height: RADIUS * 2, borderRadius: "50%", border: "1px solid rgba(10,186,181,0.15)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", width: RADIUS * 2 + 60, height: RADIUS * 2 + 60, borderRadius: "50%", border: "1px solid rgba(10,186,181,0.06)", pointerEvents: "none" }} />
+
+        {/* Central sphere */}
+        <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", width: 64, height: 64, borderRadius: "50%", background: "radial-gradient(circle at 35% 35%, #1de8e2, #0ABAB5 40%, #076e6b)", boxShadow: "0 0 30px rgba(10,186,181,0.5), 0 0 60px rgba(10,186,181,0.2)", animation: "orbitalPulse 2.5s ease-in-out infinite", zIndex: 20, pointerEvents: "none" }} />
+
+        {/* Nodes */}
+        {CASES.map((caseItem, index) => {
+          const { x, y, zIndex, opacity } = calculateNodePosition(index, CASES.length, rotationAngle, RADIUS);
+          const isHovered = hoveredId === caseItem.id;
+          const IconComp = ICON_MAP[caseItem.icon];
+
+          return (
+            <div
+              key={caseItem.id}
+              style={{
+                position: "absolute",
+                left: `calc(50% + ${x}px)`,
+                top: `calc(50% + ${y}px)`,
+                transform: `translate(-50%, -50%) scale(${isHovered ? 1.2 : 1})`,
+                zIndex: isHovered ? 100 : zIndex + 10,
+                opacity,
+                transition: "transform 0.25s ease",
+                pointerEvents: "none",
+              }}
+            >
+              <div style={{
+                width: 48, height: 48, borderRadius: "50%",
+                background: isHovered ? `radial-gradient(circle at 35% 35%, ${caseItem.color}cc, ${caseItem.color}66)` : "rgba(7,21,24,0.9)",
+                border: `2px solid ${caseItem.color}`,
+                boxShadow: isHovered ? `0 0 20px ${caseItem.color}88, 0 0 40px ${caseItem.color}44` : `0 0 10px ${caseItem.color}44`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                transition: "all 0.3s ease",
+              }}>
+                <IconComp size={20} color={caseItem.color} />
+              </div>
+              <div style={{ position: "absolute", top: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)", whiteSpace: "nowrap", fontFamily: FONT, fontSize: 10, color: isHovered ? caseItem.color : "rgba(255,255,255,0.6)", pointerEvents: "none", letterSpacing: "0.03em", transition: "color 0.3s" }}>
+                {caseItem.title}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Info card (fixed right panel) ── */}
+      <div
+        style={{ flex: 1, opacity: activeCase ? 1 : 0, pointerEvents: activeCase ? "auto" : "none", transition: "opacity 0.25s ease" }}
+        onMouseEnter={handleMouseEnterCard}
+        onMouseLeave={handleMouseLeave}
+      >
+        {activeCase && (() => {
+          const IconComp = ICON_MAP[activeCase.icon];
+          return (
+            <div style={{ background: "rgba(7,21,24,0.97)", border: `1px solid ${activeCase.color}44`, borderRadius: 20, padding: 24, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", boxShadow: `0 24px 60px rgba(0,0,0,0.6), 0 0 40px ${activeCase.color}18` }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 20, background: `${activeCase.color}18`, border: `1px solid ${activeCase.color}40`, marginBottom: 14 }}>
+                <IconComp size={10} color={activeCase.color} />
+                <span style={{ fontFamily: FONT, fontSize: 10, color: activeCase.color, letterSpacing: "0.08em", textTransform: "uppercase" }}>{activeCase.subtitle}</span>
+              </div>
+              <h3 style={{ fontFamily: FONT, fontWeight: 400, fontSize: 22, letterSpacing: "-0.03em", color: "#fff", margin: "0 0 10px" }}>{activeCase.title}</h3>
+              <p style={{ fontFamily: FONT, fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 1.65, margin: "0 0 18px" }}>{activeCase.description}</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 18, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+                {activeCase.metrics.map((metric, i) => (
+                  <div key={i} style={{ textAlign: "center" }}>
+                    <div style={{ fontFamily: FONT, fontSize: 18, fontWeight: 700, color: activeCase.color, letterSpacing: "-0.03em" }}>{metric}</div>
+                    <div style={{ fontFamily: FONT, fontSize: 9, color: "rgba(255,255,255,0.35)", marginTop: 4, letterSpacing: "0.02em" }}>{activeCase.metricLabels[i]}</div>
+                  </div>
+                ))}
+              </div>
+              <a
+                className="orbital-open-btn"
+                href={activeCase.href}
+                onClick={(e) => { e.preventDefault(); window.history.replaceState(null, '', '/#cases'); router.push(activeCase.href); }}
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "12px 20px", borderRadius: 12, background: activeCase.color, color: "#071518", fontFamily: FONT, fontSize: 14, fontWeight: 500, letterSpacing: "-0.02em", textDecoration: "none", transition: "box-shadow 0.25s ease, transform 0.2s ease", cursor: "pointer" }}
+              >
+                Открыть кейс →
+              </a>
+            </div>
+          );
+        })()}
+      </div>
 
       <style>{`
         @keyframes orbitalPulse {
           0%, 100% { box-shadow: 0 0 30px rgba(10,186,181,0.5), 0 0 60px rgba(10,186,181,0.2); }
           50% { box-shadow: 0 0 50px rgba(10,186,181,0.8), 0 0 100px rgba(10,186,181,0.35); }
+        }
+        .orbital-open-btn:hover {
+          box-shadow: 0 0 0 2px rgba(255,255,255,0.3), 0 0 24px currentColor, 0 8px 24px rgba(0,0,0,0.4);
+          transform: translateY(-1px);
         }
       `}</style>
     </div>

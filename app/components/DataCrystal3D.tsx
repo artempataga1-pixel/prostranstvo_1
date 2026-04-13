@@ -1,10 +1,18 @@
 "use client";
 import { useEffect, useRef } from "react";
 
+type CleanupMount = HTMLDivElement & {
+  __cleanup?: () => void;
+};
+
 export default function DataCrystal3D() {
   const mountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const mountNode = mountRef.current;
+    if (!mountNode) return;
+    const mount = mountNode as CleanupMount;
+
     let animId: number;
     let disposed = false;
     let mouseX = 0;
@@ -18,9 +26,7 @@ export default function DataCrystal3D() {
 
     async function init() {
       const THREE = await import("three");
-      if (disposed || !mountRef.current) return;
-
-      const mount = mountRef.current;
+      if (disposed) return;
       const w = mount.clientWidth;
       const h = mount.clientHeight;
 
@@ -240,7 +246,7 @@ export default function DataCrystal3D() {
       };
       window.addEventListener("resize", onResize);
 
-      (mount as any).__cleanup = () => {
+      mount.__cleanup = () => {
         window.removeEventListener("resize", onResize);
         cancelAnimationFrame(animId);
         renderer.dispose();
@@ -266,8 +272,7 @@ export default function DataCrystal3D() {
       disposed = true;
       window.removeEventListener("mousemove", onMouseMove);
       cancelAnimationFrame(animId);
-      const m = mountRef.current;
-      if (m && (m as any).__cleanup) (m as any).__cleanup();
+      mount.__cleanup?.();
     };
   }, []);
 

@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 export function ScrollAnimations() {
+  const pathname = usePathname();
+
   useEffect(() => {
-    let rafId = 0;
     let cleanup: (() => void) | undefined;
+    let disposed = false;
 
     (async () => {
       const [{ gsap }, { ScrollTrigger }, { default: Lenis }] = await Promise.all([
@@ -14,7 +17,10 @@ export function ScrollAnimations() {
         import("lenis"),
       ]);
 
+      if (disposed) return;
+
       gsap.registerPlugin(ScrollTrigger);
+      const listenerCleanup: Array<() => void> = [];
 
       /* ── Lenis butter-smooth scroll ──────────────────────────── */
       const lenis = new Lenis({
@@ -54,49 +60,14 @@ export function ScrollAnimations() {
         const main = document.querySelector<HTMLElement>("main");
         if (main) gsap.set(main, { perspective: 1400 });
 
-        /* ── Section entrances ────────────────────────────────── */
+        /* ── Section entrances handled by FadeIn (framer-motion) ── */
+        /* GSAP only adds special effects: parallax, tilt, text reveal */
         sections.forEach((section, i) => {
           if (i === 0) return;
 
-          gsap.fromTo(
-            section,
-            { opacity: 0, y: 56, rotateX: 3, transformOrigin: "50% -10%" },
-            {
-              opacity: 1, y: 0, rotateX: 0,
-              duration: 1.05, ease: "expo.out",
-              scrollTrigger: {
-                trigger: section,
-                start: "top 90%",
-                toggleActions: "play none none none",
-                once: true,
-              },
-            }
-          );
-
-          /* stagger flow children */
-          const flow = Array.from(section.children).filter(
-            (el) => getComputedStyle(el).position !== "absolute"
-          ) as HTMLElement[];
-
-          if (flow.length > 1) {
-            gsap.fromTo(
-              flow,
-              { opacity: 0, y: 28, filter: "blur(4px)" },
-              {
-                opacity: 1, y: 0, filter: "blur(0px)",
-                duration: 0.75, stagger: 0.1, ease: "power3.out",
-                scrollTrigger: {
-                  trigger: section,
-                  start: "top 82%",
-                  toggleActions: "play none none none",
-                  once: true,
-                },
-              }
-            );
-          }
-
-          /* blob parallax — only GPU props */
-          section.querySelectorAll<HTMLElement>("[style*='radial-gradient']").forEach((el, bi) => {
+          /* blob parallax — only GPU props, max 2 per section */
+          const blobs = Array.from(section.querySelectorAll<HTMLElement>("[style*='radial-gradient']")).slice(0, 2);
+          blobs.forEach((el, bi) => {
             gsap.fromTo(el,
               { y: bi % 2 === 0 ? "8%" : "-8%", x: bi % 3 === 0 ? "-4%" : "4%" },
               {
@@ -130,6 +101,10 @@ export function ScrollAnimations() {
 
           hero.addEventListener("mousemove", onMove, { passive: true });
           hero.addEventListener("mouseleave", onLeave);
+          listenerCleanup.push(() => {
+            hero.removeEventListener("mousemove", onMove);
+            hero.removeEventListener("mouseleave", onLeave);
+          });
         }
 
         /* ── White cards 3D tilt on hover ─────────────────────── */
@@ -145,10 +120,14 @@ export function ScrollAnimations() {
           };
           card.addEventListener("mousemove", onMove, { passive: true });
           card.addEventListener("mouseleave", onLeave);
+          listenerCleanup.push(() => {
+            card.removeEventListener("mousemove", onMove);
+            card.removeEventListener("mouseleave", onLeave);
+          });
         });
 
         /* ── Heading text reveal ─────────────────────────────── */
-        document.querySelectorAll<HTMLElement>("h2, p[style*='font-size: clamp(32']").forEach((el) => {
+        document.querySelectorAll<HTMLElement>("h2").forEach((el) => {
           gsap.fromTo(el,
             { opacity: 0, y: 20, clipPath: "inset(0 0 100% 0)" },
             {
@@ -169,15 +148,18 @@ export function ScrollAnimations() {
 
       cleanup = () => {
         ctx.revert();
+        listenerCleanup.forEach((disposeListener) => disposeListener());
         gsap.ticker.remove(ticker);
         lenis.destroy();
         bar.remove();
-        cancelAnimationFrame(rafId);
       };
     })().catch(console.error);
 
-    return () => cleanup?.();
-  }, []);
+    return () => {
+      disposed = true;
+      cleanup?.();
+    };
+  }, [pathname]);
 
   return null;
 }

@@ -23,12 +23,6 @@ body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
-/* GPU-hint для секций — не блокируем рендер до GSAP */
-section {
-  will-change: transform, opacity;
-  transform-style: preserve-3d;
-  backface-visibility: hidden;
-}
 
 /* Кнопка */
 button {
@@ -72,7 +66,7 @@ a[href^="tel:"]:hover {
   100% { opacity: 0.3;  transform: scale(1);   }
 }
 
-/* ──────────────────────────────────────────────
+/* ───────────────────────────────────────────────
    Timeline "О компании" — beam travels dot-to-dot
    Cycle: 8s total
      0%–32%  beam 1 (dot1→dot2)
@@ -206,3 +200,955 @@ html.lenis, html.lenis body {
 }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+
+/* ════════════════════════════════════════════════════════════════
+   MOBILE ADAPTATIONS  ≤ 640px
+   ════════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+
+  /* ── Hero sphere — fix size so it's visible as a circle ──── */
+  .hero-sphere-img {
+    width: 88vw !important;
+    height: 88vw !important;
+    top: 38vh !important;
+  }
+
+  /* ── Hero CTA buttons ─────────────────────────────────────── */
+  .hero-cta-row {
+    flex-direction: column !important;
+    left: 16px !important; right: 16px !important;
+    transform: none !important;
+    width: auto !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    top: clamp(380px, 60svh, 560px) !important;
+  }
+  .hero-cta-row .hero-btn-cases,
+  .hero-cta-row .hero-btn-form {
+    justify-content: center !important;
+    font-size: 14px !important;
+    padding: 13px 20px !important;
+  }
+  .hero-btn-cases, .hero-btn-form { white-space: normal !important; }
+
+  /* ── All sections — clip horizontal overflow ──────────────── */
+  /* overflow:clip clips content without creating scroll container,
+     so glow/drop-shadow filters on child elements remain visible */
+  section {
+    overflow: clip !important;
+  }
+
+  /* ── WhyChooseUs — keep desktop absolute layout, just scale ─ */
+  /* Cards font scale at narrow viewport */
+  .why-cards-row > * > p:first-child {
+    font-size: clamp(13px, 3.5vw, 16px) !important;
+  }
+  .why-cards-row > * > p:last-child {
+    font-size: clamp(11px, 2.8vw, 13px) !important;
+    line-height: 1.3 !important;
+  }
+
+  /* ── GrowthModel — keep desktop layout ──────────────────── */
+  /* Timeline inner text scale */
+  .growth-label {
+    font-size: clamp(13px, 3.5vw, 15px) !important;
+  }
+  .growth-title {
+    font-size: clamp(20px, 5.5vw, 26px) !important;
+    line-height: 1.05 !important;
+  }
+  .growth-body-l, .growth-body-r {
+    font-size: clamp(13px, 3.4vw, 16px) !important;
+    line-height: 1.4 !important;
+  }
+
+  /* ── CTA Section ("Готовы увеличить выручку?") ───────────── */
+  .section-cta {
+    min-height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 32px 16px 36px !important;
+    gap: 0 !important;
+  }
+  .section-cta > * {
+    position: relative !important;
+    top: auto !important; left: auto !important;
+    right: auto !important; bottom: auto !important;
+    width: 100% !important; max-width: none !important;
+    transform: none !important;
+    height: auto !important; min-height: 0 !important;
+    white-space: normal !important;
+    margin: 0 0 14px !important;
+  }
+  .section-cta > [style*="pointer-events:none"],
+  .section-cta > [style*="pointer-events: none"] { display: none !important; }
+  .section-cta > [style*="border-radius:300px"],
+  .section-cta > [style*="border-radius: 300px"] {
+    width: auto !important;
+    align-self: flex-start !important;
+    margin-bottom: 10px !important;
+  }
+  .section-cta > h2 {
+    font-size: clamp(26px, 7vw, 34px) !important;
+    line-height: 1.0 !important;
+    margin-bottom: 12px !important;
+  }
+  .section-cta > [style*="right:3.125vw"],
+  .section-cta > [style*="right: 3.125vw"] {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 16px !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    margin-bottom: 20px !important;
+  }
+  .section-cta > [style*="height:1px"],
+  .section-cta > [style*="height: 1px"] { display: none !important; }
+  .section-cta > [style*="display:flex"][style*="align-items:center"],
+  .section-cta > [style*="display: flex"][style*="align-items: center"] {
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+
+  /* ── FAQ Section ─────────────────────────────────────────── */
+  .section-faq {
+    min-height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 32px 16px 36px !important;
+  }
+  .section-faq > * {
+    position: relative !important;
+    top: auto !important; left: auto !important;
+    right: auto !important; bottom: auto !important;
+    width: 100% !important; max-width: none !important;
+    transform: none !important;
+    height: auto !important; min-height: 0 !important;
+    white-space: normal !important;
+    margin: 0 0 14px !important;
+  }
+  .section-faq > [style*="pointer-events:none"],
+  .section-faq > [style*="pointer-events: none"] { display: none !important; }
+  .section-faq > [style*="border-radius:300px"],
+  .section-faq > [style*="border-radius: 300px"] {
+    width: auto !important;
+    align-self: flex-start !important;
+    margin-bottom: 10px !important;
+  }
+  .section-faq > h2 {
+    font-size: clamp(26px, 7vw, 34px) !important;
+    line-height: 1.0 !important;
+    margin-bottom: 10px !important;
+  }
+
+  /* ── Contacts Section ────────────────────────────────────── */
+  .section-contacts {
+    min-height: auto !important;
+    padding: 40px 0 !important;
+  }
+  .contacts-heading-row { grid-template-columns: 1fr !important; gap: 20px !important; }
+  .contacts-card-grid   { grid-template-columns: 1fr 1fr !important; }
+
+  /* ── Form page ───────────────────────────────────────────── */
+  .form-page-layout { grid-template-columns: 1fr !important; column-gap: 0 !important; }
+  .form-page-layout > div:first-child { padding-top: 0 !important; }
+
+  /* ── Orbital cases ───────────────────────────────────────── */
+  .orbital-section { min-height: 480px !important; }
+
+  /* ══════════════════════════════════════════════════════
+     ISSUE 2 — Hero: title lower, subtitle higher, infinity fix
+     ══════════════════════════════════════════════════════ */
+  .hero-title {
+    top: clamp(200px, 32svh, 280px) !important;
+    z-index: 10 !important;
+  }
+  .hero-subtitle {
+    top: clamp(290px, 43svh, 560px) !important;
+    font-size: clamp(18px, 4.5vw, 56px) !important;
+    z-index: 10 !important;
+  }
+  .hero-infinity {
+    width: 90px !important;
+    height: 46px !important;
+    top: clamp(610px, 76svh, 894px) !important;
+    opacity: 0.75 !important;
+    mix-blend-mode: screen !important;
+    filter: brightness(1.2) !important;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     ISSUE 3 — ServicesSection: infinity fix
+     ══════════════════════════════════════════════════════ */
+  .svc-title-text {
+    font-size: clamp(80px, 20vw, 580px) !important;
+    left: 0 !important;
+    width: 100% !important;
+    text-align: center !important;
+  }
+  .svc-infinity {
+    left: 8px !important;
+    width: 60px !important;
+    height: 31px !important;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     ISSUES 4, 12, 13 — Screenshot sections: fit card
+     ══════════════════════════════════════════════════════ */
+  /* All screenshot sections: make the photo card not overflow */
+  .case-screenshot {
+    min-height: max(100svh, 520px) !important;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     ISSUE 4 — ServicesPodborSection: phone card
+     ══════════════════════════════════════════════════════ */
+  .podbor-phone-card {
+    left: 8px !important;
+    right: 8px !important;
+    width: auto !important;
+    top: 28svh !important;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     ISSUE 4b — ServicesManagementSection: icons column fix ─
+     ══════════════════════════════════════════════════════ */
+  .sales-icons-col {
+    position: absolute !important;
+    right: 16px !important;
+    top: clamp(16px, 3.5vh, 30px) !important;
+    width: auto !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     ISSUE 5 — ServicesAuditSection: vertical stack on mobile ──
+     ══════════════════════════════════════════════════════ */
+  .audit-section {
+    min-height: auto !important;
+    padding-bottom: 40px !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .audit-badge {
+    order: 1 !important;
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    margin: 24px 16px 0 !important;
+    display: inline-flex !important;
+    align-self: flex-start !important;
+  }
+  .audit-heading {
+    order: 2 !important;
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: calc(100% - 32px) !important;
+    margin: 16px 16px 0 !important;
+    font-size: clamp(36px, 9vw, 60px) !important;
+  }
+  .audit-right-card {
+    order: 3 !important;
+    display: flex !important;
+    position: relative !important;
+    right: auto !important;
+    top: auto !important;
+    width: calc(100% - 32px) !important;
+    height: auto !important;
+    margin: 24px 16px 0 !important;
+    padding-top: 6px !important;
+  }
+  .audit-inner-card {
+    height: 110px !important;
+  }
+  .audit-description {
+    order: 4 !important;
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: calc(100% - 32px) !important;
+    margin: 24px 16px 0 !important;
+    font-size: clamp(15px, 4vw, 24px) !important;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     ISSUE 6 — ServicesAiSection: label 4 at 75% clips
+     ══════════════════════════════════════════════════════ */
+  .ai-graph-container {
+    overflow: hidden !important;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     ISSUE 7 — ServicesAccountingSection: vertical stack mobile
+     ══════════════════════════════════════════════════════ */
+  .accounting-section {
+    min-height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding-bottom: 32px !important;
+  }
+  .accounting-heading {
+    order: 1 !important;
+    position: relative !important;
+    left: auto !important; top: auto !important;
+    width: calc(100% - 32px) !important;
+    margin: 24px 16px 0 !important;
+    font-size: clamp(32px, 8.5vw, 52px) !important;
+  }
+  .accounting-subtext {
+    order: 2 !important;
+    position: relative !important;
+    left: auto !important; top: auto !important;
+    white-space: normal !important;
+    margin: 10px 16px 0 !important;
+    font-size: clamp(13px, 3.5vw, 20px) !important;
+  }
+  .accounting-panel {
+    order: 3 !important;
+    display: block !important;
+    position: relative !important;
+    left: auto !important; top: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    margin-top: 20px !important;
+    padding-bottom: 20px !important;
+    overflow: hidden !important;
+    border-radius: 20px !important;
+  }
+  .accounting-cards-grid {
+    position: relative !important;
+    left: auto !important; top: auto !important;
+    width: calc(100% - 32px) !important;
+    margin: 16px auto 0 !important;
+  }
+  /* card height override inside panel */
+  .accounting-panel [data-glow] {
+    height: 120px !important;
+    min-height: 0 !important;
+  }
+  .accounting-description {
+    order: 4 !important;
+    position: relative !important;
+    left: auto !important; top: auto !important;
+    width: calc(100% - 32px) !important;
+    margin: 20px 16px 0 !important;
+    font-size: clamp(14px, 3.8vw, 20px) !important;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     ISSUES 8/9 — ServicesExternalSection: white card smaller
+     ══════════════════════════════════════════════════════ */
+  .ext-white-card {
+    width: clamp(160px, 42%, 240px) !important;
+    height: auto !important;
+    min-height: 280px !important;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     ISSUE 10 — CTA: stats centered
+     ══════════════════════════════════════════════════════ */
+  .cta-stats {
+    right: auto !important;
+    left: 0 !important;
+    width: 100% !important;
+    top: auto !important;
+    transform: none !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+    margin-bottom: 20px !important;
+  }
+  .cta-stats > div {
+    text-align: center !important;
+    flex: 1 1 90px !important;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     ISSUE 11 — CaseRevenueSection: Точка А/Б cards
+     GlowCard форсирует position:relative, поэтому
+     left/right — смещение от нормального потока.
+     Делаем карточки полной ширины и top:0
+     ══════════════════════════════════════════════════════ */
+  .case-revenue-card-a,
+  .case-revenue-card-b {
+    width: calc(100% - 32px) !important;
+    left: 0 !important;
+    right: auto !important;
+    top: 0 !important;
+    height: auto !important;
+  }
+  /* card-b — первый в DOM, сдвигаем ниже заголовка/подписи */
+  .case-revenue-card-b {
+    margin-top: 260px !important;
+  }
+  /* card-a — второй в DOM, небольшой отступ */
+  .case-revenue-card-a {
+    margin-top: 16px !important;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     ISSUE 12 — CaseChairsSection: right stat hide on mobile
+     ══════════════════════════════════════════════════════ */
+  .chairs-right-stat {
+    display: none !important;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     ISSUE 12b — CaseChairsScreenshotSection: badge clip fix
+     ══════════════════════════════════════════════════════ */
+  .chairs-ozon-badge {
+    left: auto !important;
+    right: 8px !important;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     ISSUE 14 — CaseCRMStepsSection: fix cards grid & diagram
+     ══════════════════════════════════════════════════════ */
+  .crm-cards-grid {
+    width: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    height: auto !important;
+    padding: 0 12px !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: auto !important;
+    box-sizing: border-box !important;
+    top: clamp(100px, 14.7vh, 155px) !important;
+  }
+  .crm-diagram {
+    display: none !important;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     ISSUE 15 — Warehouse sections: grid layout fix
+     ══════════════════════════════════════════════════════ */
+  .warehouse-grid,
+  .warehouse-plan-grid {
+    grid-template-columns: 1fr !important;
+    width: calc(100vw - 32px) !important;
+    height: auto !important;
+    min-height: 100% !important;
+  }
+  /* Hide the right column (3D visualization) on mobile */
+  .warehouse-grid > div:last-child,
+  .warehouse-plan-grid > div:last-child {
+    display: none !important;
+  }
+
+  /* Warehouse case page actual grids */
+  .warehouse-section-grid,
+  .warehouse-plan-section-grid {
+    grid-template-columns: 1fr !important;
+    width: calc(100vw - 32px) !important;
+    height: auto !important;
+    margin: 0 auto !important;
+  }
+
+  /* Warehouse result metrics — 4→2 columns */
+  .warehouse-result-metrics {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* Warehouse inner stats grid - remove 240px minimum constraint */
+  .warehouse-stats-inner {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     Seasonal case: split-screen stacked on mobile
+     ══════════════════════════════════════════════════════ */
+  .seasonal-right-panel {
+    display: none !important;
+  }
+  .seasonal-left-content {
+    width: calc(100% - 32px) !important;
+    left: 16px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    top: clamp(40px, 5.65vh, 61px) !important;
+    gap: 24px !important;
+  }
+  .seasonal-badge-clip {
+    display: none !important;
+  }
+  .seasonal-split-section {
+    min-height: clamp(500px, 90svh, 760px) !important;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     ISSUE 16 — Scroll: ensure case-page CTA button visible
+     Case pages use flow layout for CTA — no fix needed
+     Main page: section-cta handles it already
+     ══════════════════════════════════════════════════════ */
+  /* ═══════════════════════════════════════════════════════
+     ServicesHrTeamSection — "Постоянная работа с командой" mobile
+     ══════════════════════════════════════════════════════ */
+  .hrteam-section {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: auto !important;
+    padding-bottom: 40px !important;
+  }
+  .hrteam-heading {
+    order: 1 !important;
+    position: relative !important;
+    left: auto !important; top: auto !important;
+    width: calc(100% - 32px) !important;
+    margin: 24px 16px 0 !important;
+    font-size: clamp(34px, 8.7vw, 56px) !important;
+  }
+  .hrteam-badge {
+    order: 2 !important;
+    position: relative !important;
+    left: auto !important; top: auto !important;
+    align-self: flex-start !important;
+    margin: 14px 16px 0 !important;
+  }
+  .hrteam-badge span {
+    font-size: 11px !important;
+  }
+  .hrteam-graph {
+    order: 4 !important;
+    position: relative !important;
+    left: auto !important; top: auto !important;
+    width: 100% !important;
+    height: 180px !important;
+    margin-top: 16px !important;
+    overflow: hidden !important;
+  }
+  .hrteam-graph > div {
+    position: absolute !important;
+    inset: 0 !important;
+    overflow: hidden !important;
+  }
+  /* Метки — показать как список */
+  .hrteam-label {
+    display: block !important;
+    position: relative !important;
+    left: auto !important; top: auto !important;
+    order: 3 !important;
+    width: calc(100% - 48px) !important;
+    margin: 0 16px !important;
+    font-size: clamp(14px, 3.8vw, 18px) !important;
+    color: #290c26 !important;
+    line-height: 1.3 !important;
+    padding: 8px 0 8px 12px !important;
+    border-left: 2px solid rgba(212, 0, 170, 0.3) !important;
+  }
+  .hrteam-label:first-of-type { margin-top: 16px !important; }
+  .hrteam-label + .hrteam-label { margin-top: 8px !important; }
+  /* Dotlines — скрыть */
+  .hrteam-dotline { display: none !important; }
+
+  /* Ensure section-cta button flows correctly */
+  .section-cta > div[style*="bottom"] {
+    position: relative !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    align-items: center !important;
+    margin-top: 8px !important;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     ServicesTeamSection — "Найдем нужных людей" mobile
+     Figma node: 2040:389
+     ══════════════════════════════════════════════════════ */
+  .team-section {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 480px !important;
+    padding-bottom: 80px !important;
+  }
+  .team-heading {
+    order: 1 !important;
+    position: relative !important;
+    left: auto !important; top: auto !important;
+    width: calc(100% - 32px) !important;
+    margin: 24px 16px 0 !important;
+    font-size: clamp(36px, 9vw, 60px) !important;
+  }
+  .team-badge {
+    order: 2 !important;
+    position: relative !important;
+    left: auto !important; top: auto !important;
+    display: inline-flex !important;
+    align-self: flex-start !important;
+    margin: 16px 16px 0 !important;
+  }
+  .team-badge p {
+    font-size: 11px !important;
+    white-space: nowrap !important;
+  }
+  .team-description {
+    order: 3 !important;
+    position: relative !important;
+    left: auto !important; top: auto !important;
+    width: calc(100% - 32px) !important;
+    margin: 20px 16px 0 !important;
+    font-size: clamp(15px, 4vw, 24px) !important;
+  }
+  .team-bullets {
+    order: 4 !important;
+    position: relative !important;
+    left: auto !important; top: auto !important;
+    width: calc(100% - 32px) !important;
+    margin: 20px 16px 0 !important;
+  }
+  .team-bullets p {
+    font-size: clamp(14px, 3.8vw, 22px) !important;
+    white-space: normal !important;
+    line-height: 1.4 !important;
+  }
+  /* Radar — show as background-image so we can control crop */
+  .team-radar {
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 200px !important;
+    transform: none !important;
+    background-image: url('/figma-assets/team-radar.svg') !important;
+    background-size: 100% auto !important;
+    background-position: center bottom !important;
+    background-repeat: no-repeat !important;
+  }
+  .team-radar img {
+    display: none !important;
+  }
+  /* Gradient overlay — hide on mobile (not needed) */
+  .team-gradient-overlay {
+    display: none !important;
+  }
+  /* Dots — hide on mobile */
+  .team-dot {
+    display: none !important;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     CaseChairsPage — мобильная адаптация 390px ──
+     ══════════════════════════════════════════════════════ */
+
+  /* Иконки бесконечности — фиксируем 2:1 соотношение */
+  .chairs-infinity {
+    width: 50px !important;
+    height: 25px !important;
+    top: 16px !important;
+    left: 16px !important;
+  }
+
+  /* Маржинальность секция — flex column */
+  .chairs-margin-section {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: auto !important;
+    padding: 20px 0 40px !important;
+  }
+  .chairs-margin-badge {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    order: 1 !important;
+    align-self: flex-end !important;
+    margin: 16px 16px 0 !important;
+  }
+  .chairs-margin-left {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    order: 2 !important;
+    width: calc(100% - 32px) !important;
+    margin: 20px 16px 0 !important;
+    gap: 12px !important;
+  }
+  .chairs-margin-left > p:first-child {
+    font-size: clamp(26px, 6.5vw, 40px) !important;
+    line-height: 1.0 !important;
+  }
+  .chairs-margin-left > div p {
+    font-size: clamp(13px, 3.3vw, 18px) !important;
+    white-space: normal !important;
+  }
+  /* Блок 12% */
+  .chairs-margin-stat {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    order: 3 !important;
+    margin: 20px 16px 0 !important;
+    z-index: auto !important;
+  }
+  .chairs-margin-stat p { white-space: normal !important; }
+  /* Уменьшить цифру 12% */
+  .chairs-margin-stat p:last-child {
+    font-size: 28px !important;
+    line-height: 1 !important;
+  }
+
+  /* Блок 25% — вернуть в поток поверх скрытия chairs-right-stat */
+  .chairs-margin-section .chairs-margin-25 {
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    order: 4 !important;
+    margin: 12px 16px 0 !important;
+    z-index: auto !important;
+  }
+  /* Уменьшить цифру 25% */
+  .chairs-margin-section .chairs-margin-25 p:last-child {
+    font-size: 28px !important;
+    line-height: 1 !important;
+  }
+  .chairs-margin-section .chairs-margin-25 p:first-child {
+    margin-bottom: 8px !important;
+    white-space: normal !important;
+  }
+
+  /* Граф — вдвое меньше */
+  .chairs-margin-graph {
+    position: relative !important;
+    left: -16px !important;
+    top: auto !important;
+    order: 5 !important;
+    width: calc(100% + 32px) !important;
+    height: 80px !important;
+    margin: 16px 0 0 !important;
+    max-width: none !important;
+    z-index: auto !important;
+  }
+  .chairs-margin-problems {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    order: 6 !important;
+    width: calc(100% - 32px) !important;
+    margin: 12px 16px 0 !important;
+    z-index: auto !important;
+  }
+  .chairs-margin-problems p {
+    font-size: clamp(13px, 3.3vw, 18px) !important;
+    white-space: normal !important;
+  }
+  .chairs-margin-line {
+    display: none !important;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     CaseJeansPage — мобильная адаптация 390px ─
+     ══════════════════════════════════════════════════════ */
+
+  /* Revenue section — flex column stack */
+  .jeans-revenue-section {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: auto !important;
+    padding: 20px 0 32px !important;
+  }
+  .jeans-revenue-badge {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    align-self: flex-end !important;
+    order: 1 !important;
+    margin: 16px 16px 0 !important;
+  }
+  .jeans-revenue-heading {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: calc(100% - 32px) !important;
+    font-size: clamp(30px, 7.5vw, 48px) !important;
+    order: 2 !important;
+    margin: 16px 16px 0 !important;
+    white-space: normal !important;
+  }
+  .jeans-revenue-desc {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: calc(100% - 32px) !important;
+    font-size: clamp(13px, 3.3vw, 18px) !important;
+    white-space: normal !important;
+    order: 3 !important;
+    margin: 12px 16px 0 !important;
+  }
+  /* Graph — full-bleed, fixed height */
+  .jeans-graph {
+    position: relative !important;
+    left: -16px !important;
+    top: auto !important;
+    width: calc(100% + 32px) !important;
+    height: 140px !important;
+    order: 4 !important;
+    margin: 20px 0 0 !important;
+  }
+  /* Revenue cards — Точка А первая, Точка Б вторая */
+  .jeans-revenue-section .case-revenue-card-a {
+    order: 5 !important;
+    margin-top: 16px !important;
+    margin-left: 16px !important;
+    margin-right: 16px !important;
+    width: calc(100% - 32px) !important;
+  }
+  .jeans-revenue-section .case-revenue-card-b {
+    order: 6 !important;
+    margin-top: 12px !important;
+    margin-left: 16px !important;
+    margin-right: 16px !important;
+    width: calc(100% - 32px) !important;
+  }
+  /* Hide decorative dots/lines on mobile */
+  .jeans-decorative {
+    display: none !important;
+  }
+  /* Infinity icon — fix 2:1 ratio (vh makes height too large on tall phones) */
+  .jeans-infinity {
+    width: 50px !important;
+    height: 25px !important;
+    top: 16px !important;
+    left: 16px !important;
+  }
+
+  /* Screenshot section — flex column */
+  .jeans-screenshot-section {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: auto !important;
+    padding: 60px 0 40px !important;
+  }
+  .jeans-screenshot-badge {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    order: 1 !important;
+    align-self: flex-end !important;
+    margin: 0 16px 16px !important;
+  }
+  .jeans-screenshot-container {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    order: 2 !important;
+    width: calc(100% - 32px) !important;
+    margin: 0 16px !important;
+  }
+  .jeans-screenshot-caption {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
+    order: 3 !important;
+    display: flex !important;
+    justify-content: center !important;
+    margin: 16px 16px 0 !important;
+    white-space: normal !important;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     CaseSeasonalPage — мобильная адаптация 390px
+     ══════════════════════════════════════════════════════ */
+
+  /* Иконка ∞ — 2:1 соотношение */
+  .seasonal-infinity {
+    width: 50px !important;
+    height: 25px !important;
+    top: 16px !important;
+    left: 16px !important;
+  }
+
+  /* Split section — flex column (перебивает min-height и нет display) */
+  .seasonal-split-section {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: auto !important;
+    padding: 0 0 40px !important;
+  }
+
+  /* Left content — вытащить в поток */
+  .seasonal-left-content {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: calc(100% - 32px) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    order: 1 !important;
+    margin: 24px 16px 0 !important;
+    gap: 12px !important;
+  }
+  /* Заголовок "Вошли в топ-2%..." */
+  .seasonal-left-content > p:first-child {
+    font-size: clamp(26px, 6.5vw, 40px) !important;
+    line-height: 1.05 !important;
+  }
+  /* Список буллетов — полная ширина + читаемый шрифт */
+  .seasonal-left-content > div {
+    width: 100% !important;
+  }
+  .seasonal-left-content > div p {
+    font-size: clamp(13px, 3.3vw, 18px) !important;
+    white-space: normal !important;
+    line-height: 1.4 !important;
+  }
+
+  /* Right panel — показать как блок ниже текста */
+  .seasonal-right-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    order: 2 !important;
+    padding: 24px 16px 0 !important;
+    overflow: visible !important;
+  }
+
+  /* "Результат" лейбл */
+  .seasonal-result-label {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    font-size: clamp(22px, 5.5vw, 30px) !important;
+    white-space: normal !important;
+    margin: 0 0 12px !important;
+  }
+
+  /* Контейнер карточек */
+  .seasonal-result-cards {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+  }
+
+  /* Высота карточек — auto */
+  .seasonal-result-cards [data-glow] {
+    height: auto !important;
+    min-height: 90px !important;
+    padding: 12px !important;
+  }
+  /* Подпись карточки */
+  .seasonal-result-cards [data-glow] p:first-child {
+    font-size: 11px !important;
+    white-space: normal !important;
+    line-height: 1.3 !important;
+    margin-bottom: 8px !important;
+  }
+  /* Значение карточки */
+  .seasonal-result-cards [data-glow] p:last-child {
+    font-size: clamp(28px, 7vw, 40px) !important;
+    line-height: 1 !important;
+    white-space: normal !important;
+  }
+}

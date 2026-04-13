@@ -1,19 +1,39 @@
 "use client";
 import { useEffect, useRef } from "react";
-import type * as THREE from "three";
+
+type CleanupMount = HTMLDivElement & {
+  __cleanup?: () => void;
+};
+
+function createLemniscateCurve(THREE: typeof import("three"), scale: number) {
+  const points = Array.from({ length: 301 }, (_, index) => {
+    const t = index / 300;
+    const a = t * Math.PI * 2;
+    const denom = 1 + Math.sin(a) * Math.sin(a);
+    const x = (scale * Math.cos(a)) / denom;
+    const y = (scale * Math.sin(a) * Math.cos(a)) / denom;
+    const z = Math.sin(a * 2) * scale * 0.18;
+
+    return new THREE.Vector3(x, y, z);
+  });
+
+  return new THREE.CatmullRomCurve3(points, true, "centripetal");
+}
 
 export default function InfinityLogo3D() {
   const mountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const mountNode = mountRef.current;
+    if (!mountNode) return;
+    const mount = mountNode as CleanupMount;
+
     let animId: number;
     let disposed = false;
 
     async function init() {
       const THREE = await import("three");
-      if (disposed || !mountRef.current) return;
-
-      const mount = mountRef.current;
+      if (disposed) return;
       const w = mount.clientWidth;
       const h = mount.clientHeight;
 
@@ -28,25 +48,7 @@ export default function InfinityLogo3D() {
       renderer.setClearColor(0x000000, 0);
       mount.appendChild(renderer.domElement);
 
-      // ── Lemniscate of Bernoulli curve ──────────────────────────────
-      class LemniscateCurve extends THREE.Curve<THREE.Vector3> {
-        scale: number;
-        constructor(scale: number) {
-          super();
-          this.scale = scale;
-        }
-        getPoint(t: number): THREE.Vector3 {
-          const a = t * Math.PI * 2;
-          const denom = 1 + Math.sin(a) * Math.sin(a);
-          const x = (this.scale * Math.cos(a)) / denom;
-          const y = (this.scale * Math.sin(a) * Math.cos(a)) / denom;
-          // Add gentle 3-D twist — z oscillates twice per loop
-          const z = Math.sin(a * 2) * this.scale * 0.18;
-          return new THREE.Vector3(x, y, z);
-        }
-      }
-
-      const curve = new LemniscateCurve(1.35);
+      const curve = createLemniscateCurve(THREE, 1.35);
       const TUBE_SEGMENTS = 300;
 
       // ── Core glowing tube ─────────────────────────────────────────
@@ -203,7 +205,7 @@ export default function InfinityLogo3D() {
       window.addEventListener("resize", onResize);
 
       // Store cleanup on ref so the return closure can reach it
-      (mount as any).__cleanup = () => {
+      mount.__cleanup = () => {
         window.removeEventListener("resize", onResize);
         renderer.dispose();
         coreGeo.dispose();
@@ -223,10 +225,7 @@ export default function InfinityLogo3D() {
     return () => {
       disposed = true;
       cancelAnimationFrame(animId);
-      const mount = mountRef.current;
-      if (mount && (mount as any).__cleanup) {
-        (mount as any).__cleanup();
-      }
+      mount.__cleanup?.();
     };
   }, []);
 

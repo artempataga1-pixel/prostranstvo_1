@@ -1,18 +1,24 @@
 "use client";
 import { useEffect, useRef } from "react";
 
+type CleanupMount = HTMLDivElement & {
+  __cleanup?: () => void;
+};
+
 export default function HeroSphere() {
   const mountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const mountNode = mountRef.current;
+    if (!mountNode) return;
+    const mount = mountNode as CleanupMount;
+
     let animId: number;
     let disposed = false;
 
     async function init() {
       const THREE = await import("three");
-      if (disposed || !mountRef.current) return;
-
-      const mount = mountRef.current;
+      if (disposed) return;
       const w = mount.clientWidth;
       const h = mount.clientHeight;
 
@@ -122,7 +128,7 @@ export default function HeroSphere() {
       };
       window.addEventListener("resize", onResize);
 
-      (mount as any).__cleanup = () => {
+      mount.__cleanup = () => {
         window.removeEventListener("resize", onResize);
         cancelAnimationFrame(animId);
         renderer.dispose();
@@ -137,8 +143,7 @@ export default function HeroSphere() {
     return () => {
       disposed = true;
       cancelAnimationFrame(animId);
-      const m = mountRef.current;
-      if (m && (m as any).__cleanup) (m as any).__cleanup();
+      mount.__cleanup?.();
     };
   }, []);
 

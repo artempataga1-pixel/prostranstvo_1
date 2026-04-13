@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Prostranstvo Form
 
-## Getting Started
+Landing site and case pages built with Next.js 16 App Router.
 
-First, run the development server:
+## Stack
+
+- Next.js 16.2.2
+- React 19
+- TypeScript
+- Tailwind CSS 4
+
+## Local Development
+
+Install dependencies and start the dev server:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run dev` - start development server
+- `npm run build` - create production build
+- `npm run start` - run production server
+- `npm run lint` - run ESLint
 
-## Learn More
+## Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
+Create `.env.local` from `.env.example`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Required server variables:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHAT_ID`
 
-## Deploy on Vercel
+Optional:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `ALLOWED_ORIGIN` - production domain allowed to submit the lead form
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Do not commit `.env.local` or any real secrets to GitHub.
+
+## Deploy to Vercel
+
+1. Push this repository to GitHub.
+2. Import the repository into Vercel.
+3. Keep the default Next.js framework preset.
+4. Add the environment variables from `.env.example` in the Vercel project settings.
+5. Set `ALLOWED_ORIGIN` to your production domain after the first deploy.
+6. Trigger the deployment.
+
+Default build settings are enough for Vercel:
+
+- Build command: `npm run build`
+- Output directory: automatic
+
+## Notes
+
+- Public assets used by the site live in `public/`.
+- Lead submissions are handled by `app/api/lead/route.ts`.
+- This repository is prepared for GitHub + Vercel deployment; local cache folders like `.next/` are ignored.

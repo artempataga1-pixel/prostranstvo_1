@@ -298,35 +298,37 @@ export interface PixelCanvasProps extends React.HTMLAttributes<HTMLElement> {
   noFocus?: boolean;
 }
 
-const PixelCanvas = React.forwardRef<HTMLElement, PixelCanvasProps>(
-  ({ gap, speed, colors, variant, noFocus, style, ...props }, ref) => {
-    React.useEffect(() => {
-      if (typeof window !== "undefined") {
-        if (!customElements.get("pixel-canvas")) {
-          customElements.define("pixel-canvas", createPixelCanvasClass());
-        }
-      }
-    }, []);
+function PixelCanvas({
+  gap,
+  speed,
+  colors,
+  variant,
+  noFocus,
+  style,
+  ...props
+}: PixelCanvasProps) {
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && !customElements.get("pixel-canvas")) {
+      customElements.define("pixel-canvas", createPixelCanvasClass());
+    }
+  }, []);
 
-    return React.createElement("pixel-canvas", {
-      ref,
-      "data-gap": gap,
-      "data-speed": speed,
-      "data-colors": colors?.join(","),
-      "data-variant": variant,
-      ...(noFocus ? { "data-no-focus": "" } : {}),
-      style: {
-        position: "absolute",
-        inset: 0,
-        pointerEvents: "none",
-        width: "100%",
-        height: "100%",
-        ...style,
-      },
-      ...props,
-    });
-  }
-);
-PixelCanvas.displayName = "PixelCanvas";
+  return React.createElement("pixel-canvas", {
+    "data-gap": gap,
+    "data-speed": speed,
+    "data-colors": colors?.join(","),
+    "data-variant": variant,
+    ...(noFocus ? { "data-no-focus": "" } : {}),
+    style: {
+      position: "absolute",
+      inset: 0,
+      pointerEvents: "none",
+      width: "100%",
+      height: "100%",
+      ...style,
+    },
+    ...props,
+  });
+}
 
 export { PixelCanvas };

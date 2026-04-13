@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const MARKETPLACES = [
   "Wildberries",
@@ -64,6 +65,7 @@ const labelStyle: React.CSSProperties = {
 };
 
 export default function LeadForm() {
+  const router = useRouter();
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -72,9 +74,11 @@ export default function LeadForm() {
     revenue: "",
     task: "",
   });
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [agreed, setAgreed] = useState(false);
 
-  function set(field: string, value: string) {
+  function set(field: keyof typeof form, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
   }
 
@@ -88,69 +92,19 @@ export default function LeadForm() {
         body: JSON.stringify(form),
       });
       if (res.ok) {
-        setStatus("success");
+        const data = await res.json();
+        router.push(`/form/success?order=${data.orderNum ?? ""}`);
       } else {
+        const data = await res.json().catch(() => ({}));
+        setErrorMsg(data.error ?? `Ошибка ${res.status}`);
         setStatus("error");
       }
     } catch {
+      setErrorMsg("Нет соединения. Проверьте интернет и попробуйте снова.");
       setStatus("error");
     }
   }
 
-  if (status === "success") {
-    return (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "100%",
-          gap: "24px",
-          textAlign: "center",
-          padding: "clamp(40px, 8vh, 80px) 20px",
-        }}
-      >
-        <div
-          style={{
-            width: "72px",
-            height: "72px",
-            borderRadius: "50%",
-            background: "rgba(10,186,181,0.15)",
-            border: "2px solid #0ABAB5",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: "32px",
-          }}
-        >
-          ✓
-        </div>
-        <h3
-          style={{
-            fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-            fontWeight: 400,
-            fontSize: "clamp(24px, 2.5vw, 48px)",
-            lineHeight: 1,
-            letterSpacing: "-0.035em",
-            color: "#ffffff",
-          }}
-        >
-          Заявка отправлена!
-        </h3>
-        <p
-          style={{
-            fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-            fontSize: "clamp(14px, 1.04vw, 20px)",
-            color: "rgba(255,255,255,0.5)",
-            maxWidth: "480px",
-          }}
-        >
-          Мы свяжемся с вами в ближайшее время и проведём разбор вашего кабинета
-        </p>
-      </div>
-    );
-  }
 
   return (
     <form onSubmit={submit} style={{ width: "100%" }}>
@@ -158,7 +112,7 @@ export default function LeadForm() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
+          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
           gap: "clamp(12px, 1.25vw, 20px)",
         }}
       >
@@ -184,6 +138,7 @@ export default function LeadForm() {
             style={inputStyle}
             type="tel"
             placeholder="+7 999 000 00 00"
+            pattern="[\d\s\+\-\(\)]{7,20}"
             value={form.phone}
             onChange={(e) => set("phone", e.target.value)}
             required
@@ -274,53 +229,91 @@ export default function LeadForm() {
         </div>
       </div>
 
+      {/* Checkbox consent */}
+      <label style={{
+        display: "flex", alignItems: "flex-start", gap: "10px",
+        marginTop: "clamp(16px, 2.5vh, 28px)",
+        cursor: "pointer",
+      }}>
+        <span style={{ position: "relative", flexShrink: 0, marginTop: "1px" }}>
+          <input
+            type="checkbox"
+            checked={agreed}
+            onChange={(e) => setAgreed(e.target.checked)}
+            style={{ position: "absolute", opacity: 0, width: 0, height: 0 }}
+          />
+          <span style={{
+            display: "flex", alignItems: "center", justifyContent: "center",
+            width: "18px", height: "18px",
+            borderRadius: "5px",
+            border: agreed ? "1.5px solid #0ABAB5" : "1.5px solid rgba(255,255,255,0.25)",
+            background: agreed ? "rgba(10,186,181,0.15)" : "rgba(255,255,255,0.04)",
+            transition: "border-color 0.15s, background 0.15s",
+          }}>
+            {agreed && (
+              <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                <path d="M1 4L3.5 6.5L9 1" stroke="#0ABAB5" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            )}
+          </span>
+        </span>
+        <span style={{
+          fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+          fontSize: "clamp(10px, 0.72vw, 13px)",
+          color: "rgba(255,255,255,0.35)",
+          lineHeight: 1.5,
+          letterSpacing: "-0.01em",
+        }}>
+          Я принимаю условия{" "}
+          <a href="/oferta" target="_blank" rel="noopener noreferrer"
+            style={{ color: "rgba(10,186,181,0.7)", textDecoration: "none" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#0ABAB5")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(10,186,181,0.7)")}
+            onClick={(e) => e.stopPropagation()}
+          >публичной оферты</a>{" "}
+          и соглашаюсь с{" "}
+          <a href="/privacy" target="_blank" rel="noopener noreferrer"
+            style={{ color: "rgba(10,186,181,0.7)", textDecoration: "none" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#0ABAB5")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(10,186,181,0.7)")}
+            onClick={(e) => e.stopPropagation()}
+          >политикой конфиденциальности</a>
+        </span>
+      </label>
+
       <button
         type="submit"
-        disabled={status === "loading"}
+        disabled={status === "loading" || !agreed}
         style={{
-          marginTop: "clamp(16px, 2.5vh, 28px)",
+          marginTop: "clamp(12px, 1.8vh, 20px)",
           width: "100%",
           padding: "clamp(16px, 2vh, 22px) 32px",
           borderRadius: "12px",
-          background: status === "loading" ? "rgba(10,186,181,0.5)" : "#0ABAB5",
+          background: !agreed ? "rgba(10,186,181,0.25)" : status === "loading" ? "rgba(10,186,181,0.5)" : "#0ABAB5",
           border: "none",
-          color: "#071518",
+          color: !agreed ? "rgba(255,255,255,0.4)" : "#071518",
           fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
           fontWeight: 500,
           fontSize: "clamp(14px, 1.15vw, 22px)",
           letterSpacing: "-0.02em",
-          cursor: status === "loading" ? "not-allowed" : "pointer",
-          transition: "background 0.2s",
+          cursor: !agreed || status === "loading" ? "not-allowed" : "pointer",
+          transition: "background 0.2s, color 0.2s",
         }}
       >
         {status === "loading" ? "Отправляем..." : "Получить бесплатный разбор"}
       </button>
 
       {status === "error" && (
-        <p
-          style={{
-            marginTop: "12px",
-            textAlign: "center",
-            color: "#ff6b6b",
-            fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-            fontSize: "14px",
-          }}
-        >
-          Ошибка отправки. Попробуйте снова или напишите нам напрямую.
-        </p>
-      )}
-
-      <p
-        style={{
+        <p style={{
           marginTop: "12px",
           textAlign: "center",
-          color: "rgba(255,255,255,0.25)",
+          color: "#ff6b6b",
           fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-          fontSize: "clamp(10px, 0.68vw, 13px)",
-        }}
-      >
-        Нажимая кнопку, вы соглашаетесь на обработку персональных данных
-      </p>
+          fontSize: "14px",
+        }}>
+          Ошибка: {errorMsg || "Попробуйте снова или напишите нам напрямую."}
+        </p>
+      )}
     </form>
   );
 }

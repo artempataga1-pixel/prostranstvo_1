@@ -1,18 +1,25 @@
 "use client";
 import { useEffect, useRef } from "react";
+import type { Mesh, Vector3 } from "three";
+
+type CleanupMount = HTMLDivElement & {
+  __cleanup?: () => void;
+};
 
 export default function NeuralNet3D() {
   const mountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const mountNode = mountRef.current;
+    if (!mountNode) return;
+    const mount = mountNode as CleanupMount;
+
     let animId: number;
     let disposed = false;
 
     async function init() {
       const THREE = await import("three");
-      if (disposed || !mountRef.current) return;
-
-      const mount = mountRef.current;
+      if (disposed) return;
       const w = mount.clientWidth || 400;
       const h = mount.clientHeight || 400;
 
@@ -51,8 +58,7 @@ export default function NeuralNet3D() {
       });
 
       // Node meshes
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const nodeMeshes: any[] = [];
+      const nodeMeshes: Mesh[] = [];
       allLayers.forEach((layer, li) => {
         const { color } = layerDefs[li];
         layer.forEach((pos) => {
@@ -76,8 +82,7 @@ export default function NeuralNet3D() {
       });
 
       // Static connection lines + collect pairs
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const connectionPairs: [any, any][] = [];
+      const connectionPairs: [Vector3, Vector3][] = [];
       for (let li = 0; li < allLayers.length - 1; li++) {
         for (const from of allLayers[li]) {
           for (const to of allLayers[li + 1]) {
@@ -93,10 +98,8 @@ export default function NeuralNet3D() {
 
       // Signal pulses — small spheres traveling along connections
       const NUM_SIGNALS = 10;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const signals: any[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const sigData: { from: any; to: any; t: number; speed: number }[] = [];
+      const signals: Mesh[] = [];
+      const sigData: { from: Vector3; to: Vector3; t: number; speed: number }[] = [];
 
       for (let i = 0; i < NUM_SIGNALS; i++) {
         const pair = connectionPairs[Math.floor(Math.random() * connectionPairs.length)];
@@ -173,7 +176,7 @@ export default function NeuralNet3D() {
       };
       window.addEventListener("resize", onResize);
 
-      (mount as any).__cleanup = () => {
+      mount.__cleanup = () => {
         window.removeEventListener("resize", onResize);
         cancelAnimationFrame(animId);
         renderer.dispose();
@@ -186,8 +189,7 @@ export default function NeuralNet3D() {
     return () => {
       disposed = true;
       cancelAnimationFrame(animId);
-      const m = mountRef.current;
-      if (m && (m as any).__cleanup) (m as any).__cleanup();
+      mount.__cleanup?.();
     };
   }, []);
 

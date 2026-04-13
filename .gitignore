@@ -41,6 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 # dev screenshots and logs
+.claude/
 .codex-*.png
 .codex-*.log
 codex-dev-server.*
@@ -58,3 +59,5 @@ sec_[0-9].png
 spin_*.png
 v_[0-9].png
 vol_*.png
+photo_2026-04-10_22-19-47.jpg
+screentg.jpg
