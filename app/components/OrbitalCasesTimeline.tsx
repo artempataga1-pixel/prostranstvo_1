@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import { TrendingUp, ShoppingBag, BarChart2, Database, Cpu, Users, Warehouse } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -111,8 +112,14 @@ export default function OrbitalCasesTimeline() {
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [isOrbitVisible, setIsOrbitVisible] = useState(false);
   const rotationRef = useRef(0);
   const orbitRef = useRef<HTMLDivElement>(null);
+  const prefetchedRoutesRef = useRef<Set<string>>(new Set());
+  const hoveredIdRef = useRef<number | null>(null);
+  const hoverFrameRef = useRef(0);
+  const orbitRectRef = useRef<DOMRect | null>(null);
+  const pointerRef = useRef({ x: 0, y: 0 });
 
   // Detect mobile
   useEffect(() => {
@@ -122,64 +129,138 @@ export default function OrbitalCasesTimeline() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
+  useEffect(() => {
+    const node = orbitRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsOrbitVisible(entry?.isIntersecting ?? false);
+      },
+      { rootMargin: "180px" }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
   const RADIUS = isMobile ? 130 : 220;
   const ORBIT_SIZE = isMobile ? 310 : 560;
   const NODE_HIT_RADIUS = isMobile ? 28 : 36;
 
   // Вращение — не останавливается никогда
   useEffect(() => {
-    const id = setInterval(() => {
-      rotationRef.current = (rotationRef.current + 0.3) % 360;
-      setRotationAngle(rotationRef.current);
-    }, 50);
-    return () => clearInterval(id);
-  }, []);
+    if (!isOrbitVisible) return;
+
+    let frameId = 0;
+    let lastTime = performance.now();
+    let lastRenderTime = lastTime;
+    const frameInterval = isMobile ? 1000 / 30 : 1000 / 45;
+
+    const tick = (now: number) => {
+      const delta = now - lastTime;
+      lastTime = now;
+      rotationRef.current = (rotationRef.current + delta * 0.006) % 360;
+
+      if (now - lastRenderTime >= frameInterval) {
+        lastRenderTime = now;
+        setRotationAngle(rotationRef.current);
+      }
+
+      frameId = requestAnimationFrame(tick);
+    };
+
+    frameId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameId);
+  }, [isMobile, isOrbitVisible]);
 
   const clearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!orbitRef.current) return;
-    const rect = orbitRef.current.getBoundingClientRect();
+  useEffect(() => {
+    return () => {
+      if (clearTimerRef.current) {
+        clearTimeout(clearTimerRef.current);
+      }
+      if (hoverFrameRef.current !== 0) {
+        cancelAnimationFrame(hoverFrameRef.current);
+      }
+    };
+  }, []);
+
+  const setHoveredIdIfChanged = useCallback((nextId: number | null) => {
+    if (hoveredIdRef.current === nextId) return;
+    hoveredIdRef.current = nextId;
+    setHoveredId(nextId);
+  }, []);
+
+  const clearHoverTimer = useCallback(() => {
+    if (!clearTimerRef.current) return;
+    clearTimeout(clearTimerRef.current);
+    clearTimerRef.current = null;
+  }, []);
+
+  const scheduleHoverClear = useCallback((delay: number) => {
+    if (clearTimerRef.current) return;
+    clearTimerRef.current = setTimeout(() => {
+      setHoveredIdIfChanged(null);
+      clearTimerRef.current = null;
+    }, delay);
+  }, [setHoveredIdIfChanged]);
+
+  const flushOrbitHover = useCallback(() => {
+    hoverFrameRef.current = 0;
+
+    const rect = orbitRectRef.current ?? orbitRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    orbitRectRef.current = rect;
+
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
-    const mx = e.clientX - cx;
-    const my = e.clientY - cy;
+    const mx = pointerRef.current.x - cx;
+    const my = pointerRef.current.y - cy;
 
     let found: number | null = null;
     for (let i = 0; i < CASES.length; i++) {
       const { x, y } = calculateNodePosition(i, CASES.length, rotationRef.current, RADIUS);
-      const dist = Math.sqrt((mx - x) ** 2 + (my - y) ** 2);
-      if (dist < NODE_HIT_RADIUS) {
+      if (Math.hypot(mx - x, my - y) < NODE_HIT_RADIUS) {
         found = CASES[i].id;
         break;
       }
     }
 
     if (found !== null) {
-      if (clearTimerRef.current) { clearTimeout(clearTimerRef.current); clearTimerRef.current = null; }
-      setHoveredId(found);
-    } else {
-      if (!clearTimerRef.current) {
-        clearTimerRef.current = setTimeout(() => {
-          setHoveredId(null);
-          clearTimerRef.current = null;
-        }, 400);
-      }
+      clearHoverTimer();
+      setHoveredIdIfChanged(found);
+      return;
     }
-  }, [RADIUS, NODE_HIT_RADIUS]);
+
+    scheduleHoverClear(400);
+  }, [NODE_HIT_RADIUS, RADIUS, clearHoverTimer, scheduleHoverClear, setHoveredIdIfChanged]);
+
+  const handleOrbitPointerEnter = useCallback(() => {
+    orbitRectRef.current = orbitRef.current?.getBoundingClientRect() ?? null;
+    clearHoverTimer();
+  }, [clearHoverTimer]);
+
+  const handleOrbitPointerMove = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    pointerRef.current = { x: event.clientX, y: event.clientY };
+
+    if (hoverFrameRef.current !== 0) return;
+    hoverFrameRef.current = requestAnimationFrame(flushOrbitHover);
+  }, [flushOrbitHover]);
 
   const handleMouseLeave = useCallback(() => {
-    if (!clearTimerRef.current) {
-      clearTimerRef.current = setTimeout(() => {
-        setHoveredId(null);
-        clearTimerRef.current = null;
-      }, 800);
+    orbitRectRef.current = null;
+    if (hoverFrameRef.current !== 0) {
+      cancelAnimationFrame(hoverFrameRef.current);
+      hoverFrameRef.current = 0;
     }
-  }, []);
+    scheduleHoverClear(800);
+  }, [scheduleHoverClear]);
 
   const handleMouseEnterCard = useCallback(() => {
-    if (clearTimerRef.current) { clearTimeout(clearTimerRef.current); clearTimerRef.current = null; }
-  }, []);
+    clearHoverTimer();
+  }, [clearHoverTimer]);
 
   // Mobile: tap to select
   const handleNodeTap = useCallback((id: number) => {
@@ -188,6 +269,79 @@ export default function OrbitalCasesTimeline() {
 
   const activeId = isMobile ? selectedId : hoveredId;
   const activeCase = CASES.find((c) => c.id === activeId) ?? null;
+
+  useEffect(() => {
+    if (!activeCase) return;
+    if (prefetchedRoutesRef.current.has(activeCase.href)) return;
+
+    prefetchedRoutesRef.current.add(activeCase.href);
+    router.prefetch(activeCase.href);
+  }, [activeCase, router]);
+
+  useEffect(() => {
+    if (!isOrbitVisible) return;
+
+    const routesToPrefetch = CASES
+      .map(({ href }) => href)
+      .filter((href) => !prefetchedRoutesRef.current.has(href));
+
+    if (routesToPrefetch.length === 0) return;
+
+    const browserWindow = window as Window & {
+      requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+
+    const queue = [...routesToPrefetch];
+    const batchSize = isMobile ? 1 : 2;
+    const batchDelay = isMobile ? 260 : 140;
+
+    let disposed = false;
+    let idleHandle: number | undefined;
+    let timeoutHandle: number | undefined;
+
+    const scheduleNextBatch = () => {
+      if (disposed || queue.length === 0) return;
+
+      const runBatch = () => {
+        if (disposed) return;
+
+        queue.splice(0, batchSize).forEach((href) => {
+          prefetchedRoutesRef.current.add(href);
+          router.prefetch(href);
+        });
+
+        if (disposed || queue.length === 0) return;
+
+        timeoutHandle = window.setTimeout(() => {
+          scheduleNextBatch();
+        }, batchDelay);
+      };
+
+      if (browserWindow.requestIdleCallback) {
+        idleHandle = browserWindow.requestIdleCallback(runBatch, { timeout: 1000 });
+        return;
+      }
+
+      runBatch();
+    };
+
+    timeoutHandle = window.setTimeout(() => {
+      scheduleNextBatch();
+    }, batchDelay);
+
+    return () => {
+      disposed = true;
+
+      if (idleHandle !== undefined && browserWindow.cancelIdleCallback) {
+        browserWindow.cancelIdleCallback(idleHandle);
+      }
+
+      if (timeoutHandle !== undefined) {
+        window.clearTimeout(timeoutHandle);
+      }
+    };
+  }, [isMobile, isOrbitVisible, router]);
 
   // Mobile cards list
   if (isMobile) {
@@ -303,13 +457,14 @@ export default function OrbitalCasesTimeline() {
                     </div>
                   ))}
                 </div>
-                <a
+                <Link
                   href={activeCase.href}
-                  onClick={(e) => { e.preventDefault(); window.history.replaceState(null, '', '/#cases'); router.push(activeCase.href); }}
+                  prefetch
+                  onClick={() => { window.history.replaceState(null, "", "/#cases"); }}
                   style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "12px 20px", borderRadius: 10, background: activeCase.color, color: "#071518", fontFamily: FONT, fontSize: 14, fontWeight: 500, letterSpacing: "-0.02em", textDecoration: "none", cursor: "pointer" }}
                 >
                   Открыть кейс →
-                </a>
+                </Link>
               </div>
             );
           })()}
@@ -333,8 +488,9 @@ export default function OrbitalCasesTimeline() {
       <div
         ref={orbitRef}
         style={{ position: "relative", flexShrink: 0, width: ORBIT_SIZE, height: ORBIT_SIZE, cursor: activeCase ? "pointer" : "default" }}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
+        onPointerEnter={handleOrbitPointerEnter}
+        onPointerMove={handleOrbitPointerMove}
+        onPointerLeave={handleMouseLeave}
         onClick={() => {
           if (activeCase) {
             window.history.replaceState(null, '', '/#cases');
@@ -411,14 +567,15 @@ export default function OrbitalCasesTimeline() {
                   </div>
                 ))}
               </div>
-              <a
+              <Link
                 className="orbital-open-btn"
                 href={activeCase.href}
-                onClick={(e) => { e.preventDefault(); window.history.replaceState(null, '', '/#cases'); router.push(activeCase.href); }}
+                prefetch
+                onClick={() => { window.history.replaceState(null, "", "/#cases"); }}
                 style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "12px 20px", borderRadius: 12, background: activeCase.color, color: "#071518", fontFamily: FONT, fontSize: 14, fontWeight: 500, letterSpacing: "-0.02em", textDecoration: "none", transition: "box-shadow 0.25s ease, transform 0.2s ease", cursor: "pointer" }}
               >
                 Открыть кейс →
-              </a>
+              </Link>
             </div>
           );
         })()}

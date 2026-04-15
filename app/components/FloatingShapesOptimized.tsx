@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
 
-// Pill-shaped floating shape — adapated from HeroGeometric / ElegantShape
-// Colours tuned for our teal bg.png: white semi-transparent with subtle blur
 function ElegantShape({
   className = "",
   delay = 0,
@@ -23,32 +20,25 @@ function ElegantShape({
   shouldFloat?: boolean;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -150, rotate: rotate - 15 }}
-      animate={{ opacity: 1, y: 0, rotate }}
-      transition={{
-        duration: 2.4,
-        delay,
-        ease: [0.23, 0.86, 0.39, 0.96],
-        opacity: { duration: 1.2 },
-      }}
-      style={{ position: "absolute", willChange: "transform" }}
+    <div
       className={className}
+      style={{
+        position: "absolute",
+        willChange: "transform, opacity",
+        animation: `hero-shape-enter 2.4s cubic-bezier(0.23, 0.86, 0.39, 0.96) ${delay}s both`,
+        ["--shape-rotate-from" as string]: `${rotate - 15}deg`,
+        ["--shape-rotate-to" as string]: `${rotate}deg`,
+      }}
     >
-      <motion.div
-        animate={shouldFloat ? { y: [0, 18, 0] } : { y: 0 }}
-        transition={shouldFloat
-          ? {
-              duration: 12,
-              repeat: Number.POSITIVE_INFINITY,
-              ease: "easeInOut",
-              delay,
-            }
-          : {
-              duration: 0.25,
-              ease: "easeOut",
-            }}
-        style={{ width, height, position: "relative" }}
+      <div
+        style={{
+          width,
+          height,
+          position: "relative",
+          willChange: "transform",
+          animation: `hero-shape-float 12s ease-in-out ${delay}s infinite`,
+          animationPlayState: shouldFloat ? "running" : "paused",
+        }}
       >
         <div
           style={{
@@ -60,15 +50,15 @@ function ElegantShape({
             boxShadow: "0 8px 32px 0 rgba(255,255,255,0.08)",
           }}
         />
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
 
-export default function FloatingShapes() {
+export default function FloatingShapesOptimized() {
   const ref = useRef<HTMLDivElement>(null);
   const [isNearViewport, setIsNearViewport] = useState(true);
-  const [isDocumentVisible, setIsDocumentVisible] = useState(() => typeof document === "undefined" || document.visibilityState === "visible");
+  const [isDocumentVisible, setIsDocumentVisible] = useState(true);
   const shouldFloat = isNearViewport && isDocumentVisible;
 
   useEffect(() => {
@@ -105,7 +95,30 @@ export default function FloatingShapes() {
         pointerEvents: "none",
       }}
     >
-      {/* Large pill — top-left */}
+      <style>{`
+        @keyframes hero-shape-enter {
+          0% {
+            opacity: 0;
+            transform: translate3d(0, -150px, 0) rotate(var(--shape-rotate-from));
+          }
+
+          100% {
+            opacity: 1;
+            transform: translate3d(0, 0, 0) rotate(var(--shape-rotate-to));
+          }
+        }
+
+        @keyframes hero-shape-float {
+          0%, 100% {
+            transform: translate3d(0, 0, 0);
+          }
+
+          50% {
+            transform: translate3d(0, 18px, 0);
+          }
+        }
+      `}</style>
+
       <ElegantShape
         delay={0.3}
         width={520}
@@ -116,7 +129,6 @@ export default function FloatingShapes() {
         className="left-[-8%] top-[18%]"
       />
 
-      {/* Medium pill — top-right */}
       <ElegantShape
         delay={0.5}
         width={380}
@@ -127,7 +139,6 @@ export default function FloatingShapes() {
         className="right-[-4%] top-[62%]"
       />
 
-      {/* Small pill — bottom-left */}
       <ElegantShape
         delay={0.4}
         width={240}
@@ -138,7 +149,6 @@ export default function FloatingShapes() {
         className="left-[8%] bottom-[8%]"
       />
 
-      {/* Tiny pill — top-right corner */}
       <ElegantShape
         delay={0.65}
         width={170}
@@ -149,7 +159,6 @@ export default function FloatingShapes() {
         className="right-[18%] top-[8%]"
       />
 
-      {/* Tiny pill — top-center-left */}
       <ElegantShape
         delay={0.75}
         width={130}

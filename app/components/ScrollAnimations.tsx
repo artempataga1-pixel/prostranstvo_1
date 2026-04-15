@@ -7,10 +7,18 @@ export function ScrollAnimations() {
   const pathname = usePathname();
 
   useEffect(() => {
+    const canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    const browserWindow = window as Window & {
+      requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+
     let cleanup: (() => void) | undefined;
     let disposed = false;
+    let idleHandle: number | undefined;
+    let timeoutHandle: number | undefined;
 
-    (async () => {
+    const startAnimations = async () => {
       const [{ gsap }, { ScrollTrigger }, { default: Lenis }] = await Promise.all([
         import("gsap"),
         import("gsap/ScrollTrigger"),
@@ -86,7 +94,7 @@ export function ScrollAnimations() {
 
         /* ── Hero 3D mouse tilt ───────────────────────────────── */
         const hero = sections[0];
-        if (hero) {
+        if (hero && canHover) {
           let cx = 0, cy = 0;
           const inner = hero.querySelector<HTMLElement>("div") ?? hero;
 
@@ -108,23 +116,25 @@ export function ScrollAnimations() {
         }
 
         /* ── White cards 3D tilt on hover ─────────────────────── */
-        document.querySelectorAll<HTMLElement>("div[style*='background: #ffffff'], div[style*='background-color: white']").forEach((card) => {
-          const onMove = (e: MouseEvent) => {
-            const r = card.getBoundingClientRect();
-            const x = ((e.clientX - r.left) / r.width  - 0.5) * 10;
-            const y = ((e.clientY - r.top)  / r.height - 0.5) * -7;
-            gsap.to(card, { rotateY: x, rotateX: y, scale: 1.015, duration: 0.35, ease: "power2.out", transformPerspective: 700 });
-          };
-          const onLeave = () => {
-            gsap.to(card, { rotateY: 0, rotateX: 0, scale: 1, duration: 0.7, ease: "elastic.out(1, 0.55)" });
-          };
-          card.addEventListener("mousemove", onMove, { passive: true });
-          card.addEventListener("mouseleave", onLeave);
-          listenerCleanup.push(() => {
-            card.removeEventListener("mousemove", onMove);
-            card.removeEventListener("mouseleave", onLeave);
+        if (canHover) {
+          document.querySelectorAll<HTMLElement>("div[style*='background: #ffffff'], div[style*='background-color: white']").forEach((card) => {
+            const onMove = (e: MouseEvent) => {
+              const r = card.getBoundingClientRect();
+              const x = ((e.clientX - r.left) / r.width  - 0.5) * 10;
+              const y = ((e.clientY - r.top)  / r.height - 0.5) * -7;
+              gsap.to(card, { rotateY: x, rotateX: y, scale: 1.015, duration: 0.35, ease: "power2.out", transformPerspective: 700 });
+            };
+            const onLeave = () => {
+              gsap.to(card, { rotateY: 0, rotateX: 0, scale: 1, duration: 0.7, ease: "elastic.out(1, 0.55)" });
+            };
+            card.addEventListener("mousemove", onMove, { passive: true });
+            card.addEventListener("mouseleave", onLeave);
+            listenerCleanup.push(() => {
+              card.removeEventListener("mousemove", onMove);
+              card.removeEventListener("mouseleave", onLeave);
+            });
           });
-        });
+        }
 
         /* ── Heading text reveal ─────────────────────────────── */
         document.querySelectorAll<HTMLElement>("h2").forEach((el) => {
@@ -153,10 +163,31 @@ export function ScrollAnimations() {
         lenis.destroy();
         bar.remove();
       };
-    })().catch(console.error);
+    };
+
+    const scheduleStart = () => {
+      if (browserWindow.requestIdleCallback) {
+        idleHandle = browserWindow.requestIdleCallback(() => {
+          void startAnimations().catch(console.error);
+        }, { timeout: 500 });
+        return;
+      }
+
+      timeoutHandle = window.setTimeout(() => {
+        void startAnimations().catch(console.error);
+      }, 120);
+    };
+
+    scheduleStart();
 
     return () => {
       disposed = true;
+      if (idleHandle !== undefined && browserWindow.cancelIdleCallback) {
+        browserWindow.cancelIdleCallback(idleHandle);
+      }
+      if (timeoutHandle !== undefined) {
+        window.clearTimeout(timeoutHandle);
+      }
       cleanup?.();
     };
   }, [pathname]);

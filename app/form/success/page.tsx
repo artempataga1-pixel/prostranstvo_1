@@ -3,9 +3,9 @@
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
-import InfinityAnimation from "../../components/InfinityAnimation";
-import ShaderBackground from "../../components/ShaderBackground";
-import FloatingShapes from "../../components/FloatingShapes";
+import InfinityMark from "../../components/InfinityMark";
+import ShaderBackgroundOptimized from "../../components/ShaderBackgroundOptimized";
+import FloatingShapesOptimized from "../../components/FloatingShapesOptimized";
 
 const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
 const ACCENT = "#0ABAB5";
@@ -35,12 +35,12 @@ function SuccessContent() {
 
       {/* Shader */}
       <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none" }}>
-        <ShaderBackground />
+        <ShaderBackgroundOptimized />
       </div>
 
       {/* Floating shapes */}
       <div style={{ position: "absolute", inset: 0, zIndex: 1, opacity: 0.2, pointerEvents: "none" }}>
-        <FloatingShapes />
+        <FloatingShapesOptimized />
       </div>
 
       {/* Ambient glow */}
@@ -107,7 +107,7 @@ function SuccessContent() {
           <span style={{ color: ACCENT }}>PRO</span>странство
         </div>
         <div style={{ width: "clamp(50px, 5vw, 90px)", position: "relative", height: "clamp(26px, 2.6vw, 50px)" }}>
-          <InfinityAnimation />
+                <InfinityMark />
         </div>
       </header>
 

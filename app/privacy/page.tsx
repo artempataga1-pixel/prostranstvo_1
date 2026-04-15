@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import InfinityAnimation from "../components/InfinityAnimation";
+import InfinityMark from "../components/InfinityMark";
 
 const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
 const ACCENT = "#0ABAB5";
@@ -170,7 +170,7 @@ export default function PrivacyPage() {
           <span style={{ color: ACCENT }}>PRO</span>странство
         </div>
         <div style={{ width: "clamp(50px, 5vw, 90px)", position: "relative", height: "clamp(26px, 2.6vw, 50px)" }}>
-          <InfinityAnimation />
+                <InfinityMark />
         </div>
       </header>
 

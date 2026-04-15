@@ -1,8 +1,7 @@
-"use client";
 import Link from "next/link";
 import CountUp from "../../components/CountUp";
 import { GlowCard } from "../../components/GlowCard";
-import Cube3D from "../../components/Cube3D";
+import { DeferredCube3D } from "../../components/DeferredSceneMounts";
 
 const FONT = "Helvetica Neue, Helvetica, Arial, sans-serif";
 
@@ -11,6 +10,11 @@ const sectionStyle = {
   width: "100%",
   minHeight: "100svh",
   overflow: "clip",
+};
+
+const deferredSectionStyle = {
+  contentVisibility: "auto" as const,
+  containIntrinsicSize: "1000px",
 };
 
 const metrics = [
@@ -131,7 +135,7 @@ export default function CaseAutomation1CPage() {
     </div>
 
     {/* Case1CIntroSection */}
-    <section style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#0d1f1f" }}>
+    <section style={{ ...sectionStyle, ...deferredSectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#0d1f1f" }}>
       <div style={{ position: "absolute", right: "-8vw", top: "10vh", width: "55vw", height: "55vw", background: "radial-gradient(circle, rgba(10,186,181,0.10) 0%, transparent 65%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", left: "-5vw", bottom: "0", width: "40vw", height: "40vw", background: "radial-gradient(circle, rgba(10,186,181,0.06) 0%, transparent 65%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", top: "clamp(30px, 5.56vh, 60px)", right: "3.125vw", display: "flex", alignItems: "center", padding: "clamp(8px, 1.11vh, 12px) clamp(10px, 0.83vw, 16px)", borderRadius: "300px", background: "rgba(10,186,181,0.12)", border: "1px solid rgba(10,186,181,0.3)", backdropFilter: "blur(15px)", WebkitBackdropFilter: "blur(15px)" }}>
@@ -146,7 +150,7 @@ export default function CaseAutomation1CPage() {
         Полный цикл внедрения операционной системы управления складом: от аудита бизнес‑процессов до обучения персонала и месячного сопровождения
       </p>
       <div style={{ position: "absolute", right: "clamp(20px, 3vw, 60px)", top: "50%", transform: "translateY(-50%)", width: "clamp(280px, 43vw, 820px)", height: "clamp(280px, 43vw, 820px)", pointerEvents: "none" }}>
-        <Cube3D />
+        <DeferredCube3D />
       </div>
       <div style={{ position: "absolute", bottom: "clamp(36px, 6.67vh, 72px)", left: "3.125vw", display: "flex", gap: "clamp(24px, 5.21vw, 100px)", alignItems: "flex-end" }}>
         {[
@@ -167,7 +171,7 @@ export default function CaseAutomation1CPage() {
     </section>
 
     {/* Case1CStepsSection */}
-    <section style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#071518" }}>
+    <section style={{ ...sectionStyle, ...deferredSectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#071518" }}>
       <div style={{ position: "absolute", right: "-6vw", top: "5vh", width: "55vw", height: "55vw", background: "radial-gradient(circle, rgba(10,186,181,0.09) 0%, transparent 65%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", left: "-5vw", bottom: "0", width: "35vw", height: "35vw", background: "radial-gradient(circle, rgba(10,186,181,0.05) 0%, transparent 65%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", left: "3.125vw", top: "clamp(30px, 5.56vh, 60px)", display: "flex", alignItems: "baseline", gap: "clamp(12px, 1.5vw, 28px)" }}>

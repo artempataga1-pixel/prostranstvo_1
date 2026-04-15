@@ -1,29 +1,34 @@
-"use client";
 // Figma node: 2044:7 "Титульник 3" — file z3AxyWDY3tHo7PYT1vRUF4
 // Design base: 1920 × 1080 px
-import { useState } from "react";
+import type { ImgHTMLAttributes } from "react";
+import Link from "next/link";
+import Image from "next/image";
 
 // Helper: не рендерит <img> когда src пустая строка (избегаем React-предупреждения)
-function Img({ src, alt = "", ...props }: React.ImgHTMLAttributes<HTMLImageElement>) {
+function Img({ src, alt = "", loading, decoding = "async", fetchPriority, ...props }: ImgHTMLAttributes<HTMLImageElement>) {
   if (!src) return null;
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} alt={alt} {...props} />;
+  return <img src={src} alt={alt} loading={loading ?? (fetchPriority === "high" ? "eager" : "lazy")} decoding={decoding} fetchPriority={fetchPriority} {...props} />;
 }
-import InfinityAnimation from "./components/InfinityAnimation";
-import FloatingShapes from "./components/FloatingShapes";
-import ShaderBackground from "./components/ShaderBackground";
+import InfinityMark from "./components/InfinityMark";
+import FloatingShapesOptimized from "./components/FloatingShapesOptimized";
+import ShaderBackgroundOptimized from "./components/ShaderBackgroundOptimized";
 import { FadeIn } from "./components/FadeIn";
 import CountUp from "./components/CountUp";
 import { GlowCard } from "./components/GlowCard";
-import Cube3D from "./components/Cube3D";
-import NeuralNet3D from "./components/NeuralNet3D";
-import CRM3D from "./components/CRM3D";
-import Warehouse3D from "./components/Warehouse3D";
-import OrbitalCasesTimeline from "./components/OrbitalCasesTimeline";
-import ContactsSection from "./components/ContactsSection";
+import FaqSectionClient from "./components/FaqSectionClient";
+import {
+  DeferredContactsSection,
+  DeferredOrbitalCasesTimeline,
+} from "./components/DeferredContentBlocks";
+import {
+  DeferredCRM3D,
+  DeferredCube3D,
+  DeferredNeuralNet3D,
+  DeferredWarehouse3D,
+} from "./components/DeferredSceneMounts";
 
 const BG = "/bg.png";
-const INFINITY_IMG = "/infinity.png";
 const WAREHOUSE_PLAN_IMG = "/warehouse-plan.jpg";
 
 const WAREHOUSE_STEPS = [
@@ -84,6 +89,12 @@ const sectionStyle = {
   overflow: "clip",
 };
 
+const deferredSectionStyle = {
+  ...sectionStyle,
+  contentVisibility: "auto" as const,
+  containIntrinsicSize: "1000px",
+};
+
 function HeroSection() {
   return (
     <section
@@ -96,6 +107,8 @@ function HeroSection() {
             <Img
         alt=""
         src={BG}
+        loading="eager"
+        fetchPriority="high"
         style={{
           position: "absolute",
           inset: 0,
@@ -108,6 +121,7 @@ function HeroSection() {
 
       {/* Title */}
       <div
+        data-hero-title
         className="hero-title"
         style={{
           position: "absolute",
@@ -122,6 +136,7 @@ function HeroSection() {
           letterSpacing: "clamp(-8px, -0.45vw, -2px)",
           color: "#ffffff",
           textAlign: "center",
+          willChange: "transform",
         }}
       >
         PROстранство
@@ -131,6 +146,8 @@ function HeroSection() {
             <Img
         alt=""
         src="/sphere.svg"
+        loading="eager"
+        fetchPriority="high"
         className="hero-sphere-img"
         style={{
           position: "absolute",
@@ -144,10 +161,10 @@ function HeroSection() {
       />
 
       {/* WebGL shader — teal nebula lines, screen-blended over bg.png */}
-      <ShaderBackground />
+      <ShaderBackgroundOptimized />
 
       {/* Floating pill shapes — падают сверху, плавают вверх-вниз */}
-      <FloatingShapes />
+      <FloatingShapesOptimized />
 
       {/* Backdrop blur — плавное появление сверху через mask, тянется до конца секции */}
       <div
@@ -256,13 +273,14 @@ function HeroSection() {
         >
           Смотреть кейсы ↓
         </a>
-        <a
+        <Link
           href="/form"
+          prefetch
           className="hero-btn-form"
           style={{ fontSize: "clamp(14px, 1.04vw, 20px)", padding: "clamp(13px, 1.4vh, 20px) clamp(28px, 2.3vw, 44px)" }}
         >
           Оставить заявку →
-        </a>
+        </Link>
       </div>
 
       {/* Infinity sign — mix-blend-screen как в Figma */}
@@ -279,13 +297,7 @@ function HeroSection() {
         }}
       >
         <div style={{ position: "relative", width: "100%", height: "100%" }}>
-          <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
-                        <Img
-              alt=""
-              src="/infinity.png"
-              style={{ position: "absolute", width: "206.91%", height: "405.54%", left: "-52.74%", top: "-148.71%", maxWidth: "none" }}
-            />
-          </div>
+          <InfinityMark loading="eager" sizes="(max-width: 768px) 372px, 520px" />
         </div>
       </div>
     </section>
@@ -338,7 +350,7 @@ function WhyChooseUsSection() {
 
       {/* Infinity icon — animated */}
       <div className="why-infinity" style={{ position: "absolute", right: "3.125vw", top: "clamp(30px, 5.56vh, 60px)", width: "clamp(60px, 6.09vw, 117px)", height: "clamp(31px, 3.125vw, 60px)", pointerEvents: "none" }}>
-        <InfinityAnimation />
+                <InfinityMark />
       </div>
 
       {/* Row 1 — Figma: top:374, left:72, gap:12 */}
@@ -1073,7 +1085,7 @@ function CasesSection() {
         </p>
 
         <div style={{ position: "relative", width: "clamp(60px, 8.5vw, 165px)", height: "clamp(31px, 4.35vw, 84px)", flexShrink: 0, marginBottom: "clamp(4px, 0.5vh, 8px)", pointerEvents: "none" }}>
-          <InfinityAnimation />
+                  <InfinityMark />
         </div>
       </div>
     </section>
@@ -1094,7 +1106,7 @@ function CaseScreenshotSection() {
     >
       {/* Infinity logo — animated */}
       <div style={{ position: "absolute", left: "2.76vw", top: "5vh", width: "clamp(50px, 6.09vw, 117px)", height: "clamp(26px, 5.56vh, 60px)", pointerEvents: "none" }}>
-        <InfinityAnimation />
+                  <InfinityMark />
       </div>
 
       {/* Badge "КЕЙСЫ • ДЖИНСЫ" — Figma: left:1594, top:60 */}
@@ -1143,7 +1155,7 @@ function CaseScreenshotSection() {
           boxSizing: "border-box",
         }}
       >
-                <Img
+        <Image
           alt=""
           src={OZON_SCREENSHOT_IMG}
           style={{
@@ -1356,7 +1368,7 @@ function Case1CIntroSection() {
 
       {/* 3D Cube — right */}
       <div className="split-vis" style={{ position: "absolute", right: "clamp(20px, 3vw, 60px)", top: "50%", transform: "translateY(-50%)", width: "clamp(280px, 43vw, 820px)", height: "clamp(280px, 43vw, 820px)", pointerEvents: "none" }}>
-        <Cube3D />
+        <DeferredCube3D />
       </div>
 
       {/* Stats row */}
@@ -1614,7 +1626,7 @@ function CaseAIStepsSection() {
 
       {/* Right: NeuralNet3D */}
       <div style={{ position: "absolute", right: "3.125vw", top: "50%", transform: "translateY(-50%)", width: "clamp(260px, 44vw, 820px)", height: "clamp(260px, 44vw, 820px)", pointerEvents: "none" }}>
-        <NeuralNet3D />
+        <DeferredNeuralNet3D />
       </div>
     </section>
   );
@@ -1657,7 +1669,7 @@ function CaseCRMIntroSection() {
 
       {/* 3D CRM rings */}
       <div className="split-vis" style={{ position: "absolute", right: "clamp(20px, 3vw, 60px)", top: "50%", transform: "translateY(-50%)", width: "clamp(280px, 43vw, 820px)", height: "clamp(280px, 43vw, 820px)", pointerEvents: "none" }}>
-        <CRM3D />
+        <DeferredCRM3D />
       </div>
 
       {/* Stats */}
@@ -1814,7 +1826,7 @@ function CaseWarehouseBuildIntroSection() {
   ];
 
   return (
-    <section className="split-section" style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#070f0c" }}>
+<section className="split-section" style={{ ...deferredSectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#070f0c" }}>
       {/* Glows */}
       <div style={{ position: "absolute", right: "-8vw", top: "10vh", width: "55vw", height: "55vw", background: "radial-gradient(circle, rgba(16,185,129,0.10) 0%, transparent 65%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", left: "-5vw", bottom: "0", width: "40vw", height: "40vw", background: "radial-gradient(circle, rgba(16,185,129,0.05) 0%, transparent 65%)", pointerEvents: "none" }} />
@@ -1858,7 +1870,7 @@ function CaseWarehouseBuildIntroSection() {
 
       {/* Warehouse3D — right */}
       <div className="split-vis" style={{ position: "absolute", right: "clamp(20px, 3vw, 60px)", top: "50%", transform: "translateY(-50%)", width: "clamp(280px, 43vw, 820px)", height: "clamp(280px, 43vw, 820px)", pointerEvents: "none" }}>
-        <Warehouse3D />
+        <DeferredWarehouse3D />
       </div>
     </section>
   );
@@ -1868,7 +1880,7 @@ function CaseWarehouseBuildScreenSection() {
   const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
 
   return (
-    <section className="split-section case-screenshot" style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#050c09", overflow: "clip" }}>
+<section className="split-section case-screenshot" style={{ ...deferredSectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#050c09", overflow: "clip" }}>
       {/* Vertical stripe overlay — like block 2 */}
       <div style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0) 48px)", pointerEvents: "none", zIndex: 1 }} />
 
@@ -1899,10 +1911,13 @@ function CaseWarehouseBuildScreenSection() {
       >
         {/* Horizontal scan lines inside frame */}
         <div style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(0deg, rgba(16,185,129,0.04) 0px, rgba(16,185,129,0) 32px)", pointerEvents: "none", zIndex: 1 }} />
-                <Img
+        <Image
           alt="План помещения склада — АВС-зонирование"
           src="/warehouse-build-screenshot.jpg"
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }}
+          fill
+          sizes="(max-width: 768px) 100vw, 86vw"
+          decoding="async"
+          style={{ objectFit: "cover", pointerEvents: "none" }}
         />
       </div>
 
@@ -1924,7 +1939,7 @@ function CaseWarehouseSection() {
   return (
     <section
       style={{
-        ...sectionStyle,
+        ...deferredSectionStyle,
         minHeight: "max(100svh, 780px)",
         background: "linear-gradient(156deg, #071518 0%, #0a2425 46%, #0d4e4f 120%)",
       }}
@@ -2204,7 +2219,7 @@ function CaseWarehousePlanSection() {
   return (
     <section
       style={{
-        ...sectionStyle,
+        ...deferredSectionStyle,
         minHeight: "max(100svh, 820px)",
         background: "linear-gradient(180deg, #071518 0%, #0b2021 100%)",
       }}
@@ -2229,7 +2244,7 @@ function CaseWarehousePlanSection() {
           pointerEvents: "none",
         }}
       >
-        <InfinityAnimation />
+              <InfinityMark />
       </div>
 
       <div
@@ -2297,19 +2312,18 @@ function CaseWarehousePlanSection() {
               boxShadow: "0 30px 80px rgba(0, 0, 0, 0.18)",
             }}
           >
-                        <Img
-              alt="План склада"
-              src={WAREHOUSE_PLAN_IMG}
-              style={{
-                display: "block",
-                width: "100%",
-                height: "clamp(340px, 64vh, 690px)",
-                objectFit: "contain",
-                objectPosition: "center",
-                borderRadius: "22px",
-                background: "#ffffff",
-              }}
-            />
+              <div
+                style={{
+                  position: "relative",
+                  width: "100%",
+                  height: "clamp(340px, 64vh, 690px)",
+                  borderRadius: "22px",
+                  background: "#ffffff",
+                  overflow: "hidden",
+                }}
+              >
+                <Image alt="План склада" src={WAREHOUSE_PLAN_IMG} fill sizes="(max-width: 768px) 100vw, 44vw" decoding="async" style={{ objectFit: "contain", objectPosition: "center" }} />
+              </div>
           </div>
 
           <p
@@ -2428,7 +2442,7 @@ function ServicesSection() {
     <section
       className="split-section"
       style={{
-        ...sectionStyle,
+        ...deferredSectionStyle,
         minHeight: "max(100svh, 760px)",
         background: "linear-gradient(123.5deg, rgb(15, 5, 14) 0.89%, rgb(117, 39, 109) 128.63%)",
       }}
@@ -2494,7 +2508,7 @@ function ServicesSection() {
 
       {/* Infinity logo — animated */}
       <div className="svc-infinity" style={{ position: "absolute", left: "86.72vw", top: "clamp(20px, 4.26vh, 46px)", width: "clamp(80px, 11.3vw, 217px)", height: "clamp(40px, 10.28vh, 111px)", pointerEvents: "none", zIndex: 2 }}>
-        <InfinityAnimation />
+                  <InfinityMark />
       </div>
     </section>
   );
@@ -2507,14 +2521,14 @@ function CaseChairsWbSection() {
     <section
       className="split-section"
       style={{
-        ...sectionStyle,
+        ...deferredSectionStyle,
         minHeight: "max(100svh, 760px)",
         backgroundColor: "#ffffff",
       }}
     >
       {/* Infinity logo — animated */}
       <div style={{ position: "absolute", left: "2.81vw", top: "5.09vh", width: "clamp(50px, 6.09vw, 117px)", height: "clamp(26px, 5.56vh, 60px)", pointerEvents: "none" }}>
-        <InfinityAnimation />
+                  <InfinityMark />
       </div>
 
       {/* Badge — Figma: right:60, top:60 */}
@@ -2588,14 +2602,14 @@ function CaseChairsScreenshotSection() {
     <section
       className="split-section case-screenshot"
       style={{
-        ...sectionStyle,
+        ...deferredSectionStyle,
         minHeight: "max(100svh, 760px)",
         backgroundColor: "#ffffff",
       }}
     >
       {/* Infinity logo — animated */}
       <div style={{ position: "absolute", left: "2.81vw", top: "5.09vh", width: "clamp(50px, 6.09vw, 117px)", height: "clamp(26px, 5.56vh, 60px)", pointerEvents: "none" }}>
-        <InfinityAnimation />
+                  <InfinityMark />
       </div>
 
       {/* Badge — Figma: left:calc(75%+46px), top:60, light bg dark text */}
@@ -2668,7 +2682,7 @@ function CaseChairsSection() {
     <section
       className="split-section"
       style={{
-        ...sectionStyle,
+        ...deferredSectionStyle,
         minHeight: "max(100svh, 760px)",
         backgroundColor: "#ffffff",
       }}
@@ -2875,14 +2889,14 @@ function CaseSeasonalScreenshotSection() {
     <section
       className="split-section case-screenshot"
       style={{
-        ...sectionStyle,
+        ...deferredSectionStyle,
         minHeight: "max(100svh, 760px)",
         backgroundColor: "#ffffff",
       }}
     >
       {/* Infinity logo — animated */}
       <div style={{ position: "absolute", left: "2.81vw", top: "5.09vh", width: "clamp(50px, 6.09vw, 117px)", height: "clamp(26px, 5.56vh, 60px)", pointerEvents: "none" }}>
-        <InfinityAnimation />
+              <InfinityMark />
       </div>
 
       {/* Badge — Figma: right:67, top:60, light bg, dark text */}
@@ -3042,7 +3056,7 @@ function CaseSeasonalSection() {
     <section
       className="split-section"
       style={{
-        ...sectionStyle,
+        ...deferredSectionStyle,
         minHeight: "max(100svh, 760px)",
         backgroundColor: "#ffffff",
       }}
@@ -3221,7 +3235,7 @@ function ServicesAuditSection() {
     <section
       className="split-section audit-section"
       style={{
-        ...sectionStyle,
+        ...deferredSectionStyle,
         minHeight: "max(100svh, 760px)",
         background: "linear-gradient(202.23deg, rgb(13, 31, 31) 15.55%, rgb(56, 133, 133) 99.342%)",
       }}
@@ -3390,7 +3404,7 @@ function ServicesExternalSection() {
     "Настраиваем воронки продаж",
   ];
   return (
-    <section className="split-section" style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#0ABAB5" }}>
+    <section className="split-section" style={{ ...deferredSectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#0ABAB5" }}>
 
       {/* Ellipse blob — Figma: left:-395 top:-1055 size:2756, inset:-3.63% */}
       <div style={{ position: "absolute", left: "-20.57vw", top: "-97.69vh", width: "143.54vw", height: "143.54vw", pointerEvents: "none" }}>
@@ -3534,11 +3548,11 @@ function ServicesAiSection() {
     width: "clamp(120px, 19.9vw, 382px)",
   };
   return (
-    <section className="split-section" style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#0d1f1f" }}>
+    <section className="split-section" style={{ ...deferredSectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#0d1f1f" }}>
 
       {/* Infinity logo — animated */}
       <div style={{ position: "absolute", left: "2.76vw", top: "5vh", width: "clamp(50px, 6.094vw, 117px)", height: "clamp(26px, 5.56vh, 60px)", pointerEvents: "none" }}>
-        <InfinityAnimation />
+              <InfinityMark />
       </div>
 
       {/* Badge — right:60 top:60 */}
@@ -3614,7 +3628,7 @@ function ServicesAccountingSection() {
   const labelStyle: React.CSSProperties = { fontFamily: font, fontWeight: 400, fontSize: "clamp(8px, 1.25vw, 24px)", lineHeight: 1, letterSpacing: "-0.035em", color: "#ffffff", opacity: 0.3, margin: 0, whiteSpace: "pre" };
   const titleStyle: React.CSSProperties = { fontFamily: font, fontWeight: 400, fontSize: "clamp(20px, 3.333vw, 64px)", lineHeight: 1, letterSpacing: "-0.035em", color: "#ffffff", margin: 0 };
   return (
-    <section className="split-section accounting-section" style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#ffffff" }}>
+    <section className="split-section accounting-section" style={{ ...deferredSectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#ffffff" }}>
 
       {/* Heading — Figma: left:60 top:60 font:100px tracking:-3.5px w:675 color:#0d1f1f */}
       <p className="accounting-heading" style={{ position: "absolute", left: "3.125vw", top: "clamp(30px, 5.56vh, 60px)", width: "clamp(220px, 35.16vw, 675px)", fontFamily: font, fontWeight: 400, fontSize: "clamp(32px, 5.208vw, 100px)", lineHeight: 0.9, letterSpacing: "-0.035em", color: "#0d1f1f", margin: 0 }}>
@@ -3671,7 +3685,7 @@ function ServicesManagementSection() {
     <section
       className="split-section"
       style={{
-        ...sectionStyle,
+        ...deferredSectionStyle,
         minHeight: "max(100svh, 760px)",
         backgroundColor: "#D400AA",
       }}
@@ -3906,7 +3920,7 @@ function ServicesPodborSection() {
     <section
       className="split-section"
       style={{
-        ...sectionStyle,
+        ...deferredSectionStyle,
         minHeight: "max(100svh, 760px)",
         backgroundColor: "#0f050e",
       }}
@@ -4033,7 +4047,7 @@ function ServicesPodborSection() {
 
           {/* Infinity/logo mark — animated */}
           <div style={{ position: "absolute", left: 0, top: "20.07%", width: "28.21%", height: "79.95%", pointerEvents: "none" }}>
-            <InfinityAnimation />
+              <InfinityMark />
           </div>
         </div>
 
@@ -4167,7 +4181,7 @@ function ServicesTeamSection() {
   ];
   return (
     <section className="split-section team-section" style={{
-      ...sectionStyle,
+      ...deferredSectionStyle,
       minHeight: "max(100svh, 760px)",
       background: "linear-gradient(202.23deg, rgb(13,31,31) 15.55%, rgb(56,133,133) 99.342%)",
       overflow: "clip",
@@ -4288,12 +4302,18 @@ function ServicesTeamSection() {
         height: "175.09vh",
         zIndex: 2,
         pointerEvents: "none",
-      }}>
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: "50%" }}>
-          { }
-          <Img alt="" src={TEAM_GRADIENT_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
+        }}>
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: "50%" }}>
+            <Image
+              alt=""
+              src={TEAM_GRADIENT_IMG}
+              fill
+              sizes="(max-width: 768px) 100vw, 99vw"
+              decoding="async"
+              style={{ objectFit: "fill", maxWidth: "none" }}
+            />
+          </div>
         </div>
-      </div>
 
       {/* Dot 1 — left:444 top:850 size:67px */}
       <div className="team-dot" style={{ position: "absolute", left: "23.125vw", top: "78.7vh", width: "clamp(30px, 3.49vw, 67px)", height: "clamp(30px, 3.49vw, 67px)", zIndex: 3, pointerEvents: "none" }}>
@@ -4328,7 +4348,7 @@ function ServicesHrTeamSection() {
     <section
       className="split-section hrteam-section"
       style={{
-        ...sectionStyle,
+        ...deferredSectionStyle,
         backgroundColor: "#ffffff",
         minHeight: "max(100svh, 720px)",
       }}
@@ -4656,137 +4676,7 @@ const FAQ_ITEMS = [
 ];
 
 function FaqSection() {
-  const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
-  const ACCENT = "#0ABAB5";
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-  return (
-    <section className="section-faq" style={{
-      ...sectionStyle,
-      minHeight: "max(100svh, 760px)",
-      backgroundColor: "#071518",
-    }}>
-      {/* Ambient glow */}
-      <div style={{ position: "absolute", right: "-5vw", top: "10vh", width: "50vw", height: "50vw", background: "radial-gradient(circle, rgba(10,186,181,0.07) 0%, transparent 65%)", pointerEvents: "none" }} />
-
-      {/* Dot grid */}
-      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "radial-gradient(circle, rgba(10,186,181,0.10) 1px, transparent 1px)", backgroundSize: "40px 40px", opacity: 0.3 }} />
-
-      {/* Badge */}
-      <div style={{ position: "absolute", top: "clamp(30px, 5.56vh, 60px)", right: "3.125vw", display: "flex", alignItems: "center", padding: "clamp(8px, 1.11vh, 12px) clamp(10px, 0.83vw, 16px)", borderRadius: "300px", background: "rgba(10,186,181,0.10)", border: "1px solid rgba(10,186,181,0.3)", backdropFilter: "blur(15px)", WebkitBackdropFilter: "blur(15px)" }}>
-        <p style={{ fontFamily: font, fontWeight: 400, fontSize: "clamp(10px, 1.302vw, 25px)", lineHeight: 1, letterSpacing: "-0.035em", color: ACCENT, textTransform: "uppercase", whiteSpace: "nowrap", margin: 0 }}>
-          FAQ
-        </p>
-      </div>
-
-      {/* Title — left column */}
-      <h2 style={{ position: "absolute", left: "3.125vw", top: "clamp(30px, 5.65vh, 61px)", width: "min(28vw, 520px)", fontFamily: font, fontWeight: 400, fontSize: "clamp(28px, 4.167vw, 80px)", lineHeight: 0.9, letterSpacing: "-0.035em", color: "#ffffff", margin: 0, whiteSpace: "pre-line" }}>
-        {"Частые\nвопросы"}
-      </h2>
-
-      {/* Subtitle */}
-      <p style={{ position: "absolute", left: "3.125vw", top: "clamp(185px, 26vh, 280px)", width: "min(26vw, 480px)", fontFamily: font, fontWeight: 400, fontSize: "clamp(11px, 1.04vw, 20px)", lineHeight: 1.5, letterSpacing: "-0.02em", color: "rgba(255,255,255,0.35)", margin: 0 }}>
-        Если не нашли ответ — просто напишите нам
-      </p>
-
-      {/* Accordion — right column */}
-      <div style={{
-        position: "absolute",
-        left: "clamp(260px, 36vw, 700px)",
-        right: "3.125vw",
-        top: "clamp(30px, 5.65vh, 61px)",
-        bottom: "clamp(40px, 7.41vh, 80px)",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-      }}>
-        {FAQ_ITEMS.map((item, i) => {
-          const isOpen = openIndex === i;
-          return (
-            <div key={i}>
-              {/* Question row */}
-              <button
-                onClick={() => setOpenIndex(isOpen ? null : i)}
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "clamp(12px, 2vw, 32px)",
-                  padding: "clamp(16px, 2.59vh, 28px) 0",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  textAlign: "left",
-                }}
-              >
-                <span style={{
-                  fontFamily: font,
-                  fontWeight: 400,
-                  fontSize: "clamp(14px, 1.563vw, 30px)",
-                  lineHeight: 1.15,
-                  letterSpacing: "-0.03em",
-                  color: isOpen ? "#ffffff" : "rgba(255,255,255,0.75)",
-                  transition: "color 0.2s",
-                  flex: 1,
-                }}>
-                  {item.q}
-                </span>
-                {/* Plus / minus icon */}
-                <div style={{
-                  width: "clamp(28px, 2.083vw, 40px)",
-                  height: "clamp(28px, 2.083vw, 40px)",
-                  borderRadius: "50%",
-                  border: `1px solid ${isOpen ? ACCENT : "rgba(255,255,255,0.15)"}`,
-                  background: isOpen ? `rgba(10,186,181,0.12)` : "transparent",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                  transition: "border-color 0.2s, background 0.2s",
-                }}>
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
-                    style={{ transition: "transform 0.3s ease", transform: isOpen ? "rotate(45deg)" : "rotate(0deg)" }}>
-                    <path d="M7 2v10M2 7h10" stroke={isOpen ? ACCENT : "rgba(255,255,255,0.5)"} strokeWidth="1.5" strokeLinecap="round"/>
-                  </svg>
-                </div>
-              </button>
-
-              {/* Answer */}
-              <div style={{
-                overflow: "hidden",
-                maxHeight: isOpen ? "300px" : "0px",
-                transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-              }}>
-                <p style={{
-                  fontFamily: font,
-                  fontWeight: 400,
-                  fontSize: "clamp(12px, 1.04vw, 20px)",
-                  lineHeight: 1.65,
-                  letterSpacing: "-0.02em",
-                  color: "rgba(255,255,255,0.45)",
-                  margin: 0,
-                  paddingBottom: "clamp(16px, 2.59vh, 28px)",
-                  paddingRight: "clamp(40px, 4vw, 72px)",
-                }}>
-                  {item.a}
-                </p>
-              </div>
-
-              {/* Divider */}
-              <div style={{
-                height: "1px",
-                background: isOpen
-                  ? "linear-gradient(90deg, rgba(10,186,181,0.35) 0%, rgba(10,186,181,0.1) 60%, transparent 100%)"
-                  : "rgba(255,255,255,0.07)",
-                transition: "background 0.3s",
-              }} />
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
+  return <FaqSectionClient items={FAQ_ITEMS} />;
 }
 
 function WorkWithUsSection() {
@@ -4807,7 +4697,7 @@ function WorkWithUsSection() {
 
   return (
     <section className="section-cta" style={{
-      ...sectionStyle,
+      ...deferredSectionStyle,
       minHeight: "max(100svh, 760px)",
       backgroundColor: "#070f0c",
     }}>
@@ -4863,8 +4753,9 @@ function WorkWithUsSection() {
 
       {/* CTA button — bottom left */}
       <div style={{ position: "absolute", left: "3.125vw", bottom: "clamp(40px, 7.41vh, 80px)", display: "flex", alignItems: "center", gap: "clamp(16px, 2vw, 32px)" }}>
-        <a
+        <Link
           href="/form"
+          prefetch
           className="work-with-us-btn"
           style={{
             display: "inline-flex", alignItems: "center", gap: "12px",
@@ -4885,7 +4776,7 @@ function WorkWithUsSection() {
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <path d="M3 9h12M11 5l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-        </a>
+        </Link>
         <p style={{ fontFamily: font, fontSize: "clamp(11px, 0.938vw, 18px)", color: "rgba(255,255,255,0.3)", letterSpacing: "-0.01em", margin: 0 }}>
           Ответим в течение 15 минут
         </p>
@@ -4924,13 +4815,12 @@ function OrbitalSection() {
           Выберите кейс
         </h2>
       </div>
-      <OrbitalCasesTimeline />
+      <DeferredOrbitalCasesTimeline />
     </section>
   );
 }
 
 void [
-  INFINITY_IMG,
   CaseRevenueSection,
   CaseScreenshotSection,
   SERVICES_INFINITY_IMG,
@@ -4979,7 +4869,8 @@ export default function Page() {
       <FadeIn><ServicesHrTeamSection /></FadeIn>
       <FadeIn><WorkWithUsSection /></FadeIn>
       <FadeIn><FaqSection /></FadeIn>
-      <FadeIn><ContactsSection /></FadeIn>
+      <FadeIn><DeferredContactsSection /></FadeIn>
     </main>
   );
 }
+

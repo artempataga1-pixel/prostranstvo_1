@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
+import { createAnimationActivityController } from "./animationActivity";
 
 export default function CRM3D() {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -8,7 +9,8 @@ export default function CRM3D() {
     const mount = mountRef.current;
     if (!mount) return;
 
-    let animId: number;
+    let animId = 0;
+    let disposed = false;
     let cleanup: (() => void) | undefined;
 
     async function init() {
@@ -24,7 +26,7 @@ export default function CRM3D() {
 
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setSize(w, h);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth < 768 ? 1.1 : 1.5));
       renderer.setClearColor(0x000000, 0);
       mount!.appendChild(renderer.domElement);
 
@@ -180,7 +182,8 @@ export default function CRM3D() {
 
       // ── Animation ─────────────────────────────────────────────────────────────
       let t = 0;
-      function animate() {
+      const animate = () => {
+        if (disposed) return;
         animId = requestAnimationFrame(animate);
         t += 0.01;
 
@@ -226,11 +229,29 @@ export default function CRM3D() {
         partGeo.attributes.position.needsUpdate = true;
 
         renderer.render(scene, camera);
-      }
-      animate();
+      };
+
+      const stopAnimation = () => {
+        if (animId === 0) return;
+        cancelAnimationFrame(animId);
+        animId = 0;
+      };
+
+      const startAnimation = () => {
+        if (disposed || animId !== 0) return;
+        animId = requestAnimationFrame(animate);
+      };
+
+      const activityController = createAnimationActivityController({
+        node: mount!,
+        onActivate: startAnimation,
+        onDeactivate: stopAnimation,
+        rootMargin: "260px",
+      });
 
       cleanup = () => {
-        cancelAnimationFrame(animId);
+        activityController.cleanup();
+        stopAnimation();
         renderer.dispose();
         if (mount && renderer.domElement.parentNode === mount) {
           mount.removeChild(renderer.domElement);
@@ -239,7 +260,10 @@ export default function CRM3D() {
     }
 
     init();
-    return () => cleanup?.();
+    return () => {
+      disposed = true;
+      cleanup?.();
+    };
   }, []);
 
   return <div ref={mountRef} style={{ width: "100%", height: "100%" }} />;

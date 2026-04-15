@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
 import type { Mesh, Vector3 } from "three";
+import { createAnimationActivityController } from "./animationActivity";
 
 type CleanupMount = HTMLDivElement & {
   __cleanup?: () => void;
@@ -14,7 +15,7 @@ export default function NeuralNet3D() {
     if (!mountNode) return;
     const mount = mountNode as CleanupMount;
 
-    let animId: number;
+    let animId = 0;
     let disposed = false;
 
     async function init() {
@@ -24,7 +25,7 @@ export default function NeuralNet3D() {
       const h = mount.clientHeight || 400;
 
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, premultipliedAlpha: false });
-      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      renderer.setPixelRatio(Math.min(devicePixelRatio, window.innerWidth < 768 ? 1.1 : 1.5));
       renderer.setSize(w, h);
       renderer.setClearColor(0x000000, 0);
       mount.appendChild(renderer.domElement);
@@ -135,7 +136,8 @@ export default function NeuralNet3D() {
         new THREE.PointsMaterial({ color: PURPLE, size: 0.04, transparent: true, opacity: 0.32 }),
       ));
 
-      function animate() {
+      const animate = () => {
+        if (disposed) return;
         animId = requestAnimationFrame(animate);
         const t = Date.now() * 0.001;
 
@@ -164,8 +166,25 @@ export default function NeuralNet3D() {
         ring.rotation.z = t * 0.24;
 
         renderer.render(scene, camera);
-      }
-      animate();
+      };
+
+      const stopAnimation = () => {
+        if (animId === 0) return;
+        cancelAnimationFrame(animId);
+        animId = 0;
+      };
+
+      const startAnimation = () => {
+        if (disposed || animId !== 0) return;
+        animId = requestAnimationFrame(animate);
+      };
+
+      const activityController = createAnimationActivityController({
+        node: mount,
+        onActivate: startAnimation,
+        onDeactivate: stopAnimation,
+        rootMargin: "260px",
+      });
 
       const onResize = () => {
         const nw = mount.clientWidth;
@@ -177,8 +196,9 @@ export default function NeuralNet3D() {
       window.addEventListener("resize", onResize);
 
       mount.__cleanup = () => {
+        activityController.cleanup();
         window.removeEventListener("resize", onResize);
-        cancelAnimationFrame(animId);
+        stopAnimation();
         renderer.dispose();
         if (renderer.domElement.parentNode)
           renderer.domElement.parentNode.removeChild(renderer.domElement);

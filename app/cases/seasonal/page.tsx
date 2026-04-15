@@ -1,6 +1,6 @@
-"use client";
 import Link from "next/link";
 import CountUp from "../../components/CountUp";
+import InfinityMark from "../../components/InfinityMark";
 import { GlowCard } from "../../components/GlowCard";
 
 const FONT = "Helvetica Neue, Helvetica, Arial, sans-serif";
@@ -10,6 +10,11 @@ const sectionStyle = {
   width: "100%",
   minHeight: "100svh",
   overflow: "clip",
+};
+
+const deferredSectionStyle = {
+  contentVisibility: "auto" as const,
+  containIntrinsicSize: "1000px",
 };
 
 const SEASONAL_SCREENSHOT_IMG = "/screenshots/seasonal-ozon.jpg";
@@ -132,10 +137,9 @@ export default function CaseSeasonalPage() {
     </div>
 
     {/* CaseSeasonalScreenshotSection */}
-    <section style={{ ...sectionStyle, minHeight: "max(100svh, calc(37.25vw + 340px))", backgroundColor: "#ffffff" }}>
+    <section style={{ ...sectionStyle, ...deferredSectionStyle, minHeight: "max(100svh, calc(37.25vw + 340px))", backgroundColor: "#ffffff" }}>
       <div className="seasonal-infinity" style={{ position: "absolute", left: "2.81vw", top: "5.09vh", width: "clamp(50px, 6.09vw, 117px)", height: "clamp(26px, 5.56vh, 60px)", pointerEvents: "none", overflow: "hidden" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img alt="" src="/figma-assets/infinity-light.png" style={{ position: "absolute", width: "206.91%", height: "405.54%", left: "-52.74%", top: "-148.71%", maxWidth: "none" }} />
+        <InfinityMark src="/figma-assets/infinity-light.png" mixBlendMode="normal" />
       </div>
       <div
         style={{
@@ -169,7 +173,7 @@ export default function CaseSeasonalPage() {
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img alt="" src={SEASONAL_SCREENSHOT_IMG} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />
+        <img alt="" src={SEASONAL_SCREENSHOT_IMG} loading="lazy" decoding="async" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />
       </div>
       <div
         style={{
@@ -195,7 +199,7 @@ export default function CaseSeasonalPage() {
     </section>
 
     {/* CaseSeasonalSection */}
-    <section className="seasonal-split-section" style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#ffffff" }}>
+    <section className="seasonal-split-section" style={{ ...sectionStyle, ...deferredSectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#ffffff" }}>
       {/* Right gradient panel */}
       <div
         className="seasonal-right-panel"

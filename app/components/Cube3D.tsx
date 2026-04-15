@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
+import { createAnimationActivityController } from "./animationActivity";
 
 type CleanupMount = HTMLDivElement & {
   __cleanup?: () => void;
@@ -13,7 +14,7 @@ export default function Cube3D() {
     if (!mountNode) return;
     const mount = mountNode as CleanupMount;
 
-    let animId: number;
+    let animId = 0;
     let disposed = false;
 
     async function init() {
@@ -23,7 +24,7 @@ export default function Cube3D() {
       const h = mount.clientHeight || 400;
 
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, premultipliedAlpha: false });
-      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      renderer.setPixelRatio(Math.min(devicePixelRatio, window.innerWidth < 768 ? 1.1 : 1.5));
       renderer.setSize(w, h);
       renderer.setClearColor(0x000000, 0);
       mount.appendChild(renderer.domElement);
@@ -93,7 +94,8 @@ export default function Cube3D() {
         new THREE.PointsMaterial({ color: 0x0abab5, size: 0.045, transparent: true, opacity: 0.42 }),
       ));
 
-      function animate() {
+      const animate = () => {
+        if (disposed) return;
         animId = requestAnimationFrame(animate);
         const t = Date.now() * 0.001;
 
@@ -107,8 +109,25 @@ export default function Cube3D() {
         ring2.rotation.z = -t * 0.18;
 
         renderer.render(scene, camera);
-      }
-      animate();
+      };
+
+      const stopAnimation = () => {
+        if (animId === 0) return;
+        cancelAnimationFrame(animId);
+        animId = 0;
+      };
+
+      const startAnimation = () => {
+        if (disposed || animId !== 0) return;
+        animId = requestAnimationFrame(animate);
+      };
+
+      const activityController = createAnimationActivityController({
+        node: mount,
+        onActivate: startAnimation,
+        onDeactivate: stopAnimation,
+        rootMargin: "260px",
+      });
 
       const onResize = () => {
         const nw = mount.clientWidth;
@@ -120,8 +139,9 @@ export default function Cube3D() {
       window.addEventListener("resize", onResize);
 
       mount.__cleanup = () => {
+        activityController.cleanup();
         window.removeEventListener("resize", onResize);
-        cancelAnimationFrame(animId);
+        stopAnimation();
         renderer.dispose();
         if (renderer.domElement.parentNode)
           renderer.domElement.parentNode.removeChild(renderer.domElement);

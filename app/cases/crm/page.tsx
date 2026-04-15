@@ -1,8 +1,7 @@
-"use client";
 import Link from "next/link";
 import CountUp from "../../components/CountUp";
 import { GlowCard } from "../../components/GlowCard";
-import CRM3D from "../../components/CRM3D";
+import { DeferredCRM3D } from "../../components/DeferredSceneMounts";
 
 const FONT = "Helvetica Neue, Helvetica, Arial, sans-serif";
 
@@ -11,6 +10,11 @@ const sectionStyle = {
   width: "100%",
   minHeight: "100svh",
   overflow: "clip",
+};
+
+const deferredSectionStyle = {
+  contentVisibility: "auto" as const,
+  containIntrinsicSize: "1000px",
 };
 
 const metrics = [
@@ -131,7 +135,7 @@ export default function CaseCrmPage() {
     </div>
 
     {/* CaseCRMIntroSection */}
-    <section style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#080f18" }}>
+    <section style={{ ...sectionStyle, ...deferredSectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#080f18" }}>
       <div style={{ position: "absolute", right: "-8vw", top: "10vh", width: "55vw", height: "55vw", background: "radial-gradient(circle, rgba(56,189,248,0.10) 0%, transparent 65%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", left: "-5vw", bottom: "0", width: "40vw", height: "40vw", background: "radial-gradient(circle, rgba(56,189,248,0.05) 0%, transparent 65%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", top: "clamp(30px, 5.56vh, 60px)", right: "3.125vw", display: "flex", alignItems: "center", padding: "clamp(8px, 1.11vh, 12px) clamp(10px, 0.83vw, 16px)", borderRadius: "300px", background: "rgba(56,189,248,0.10)", border: "1px solid rgba(56,189,248,0.3)", backdropFilter: "blur(15px)", WebkitBackdropFilter: "blur(15px)" }}>
@@ -146,7 +150,7 @@ export default function CaseCrmPage() {
         Полный цикл: от аудита бизнес-модели и подбора оптимального CRM-инструмента до обучения персонала и месяца технической поддержки
       </p>
       <div style={{ position: "absolute", right: "clamp(20px, 3vw, 60px)", top: "50%", transform: "translateY(-50%)", width: "clamp(280px, 43vw, 820px)", height: "clamp(280px, 43vw, 820px)", pointerEvents: "none" }}>
-        <CRM3D />
+        <DeferredCRM3D />
       </div>
       <div style={{ position: "absolute", left: "3.125vw", bottom: "clamp(36px, 6.67vh, 72px)", display: "flex", gap: "clamp(24px, 5.21vw, 100px)", alignItems: "flex-end" }}>
         {[
@@ -167,7 +171,7 @@ export default function CaseCrmPage() {
     </section>
 
     {/* CaseCRMStepsSection */}
-    <section style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#080d16" }}>
+    <section style={{ ...sectionStyle, ...deferredSectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#080d16" }}>
       <div style={{ position: "absolute", left: "50%", top: "-10vh", transform: "translateX(-50%)", width: "70vw", height: "40vw", background: "radial-gradient(ellipse, rgba(56,189,248,0.07) 0%, transparent 65%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", left: "3.125vw", top: "clamp(30px, 5.56vh, 60px)", display: "flex", alignItems: "baseline", gap: "clamp(12px, 1.5vw, 28px)" }}>
         <h2 style={{ fontFamily: FONT, fontWeight: 400, fontSize: "clamp(28px, 4.167vw, 80px)", lineHeight: 0.9, letterSpacing: "-0.04em", color: "#ffffff", margin: 0, whiteSpace: "nowrap" }}>

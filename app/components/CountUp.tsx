@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 interface CountUpProps {
   value: number;       // target number
@@ -20,6 +20,34 @@ function format(n: number, decimals: number, separator?: string): string {
   return dec !== undefined ? `${withSep}.${dec}` : withSep;
 }
 
+const START_THRESHOLD = 0.3;
+const animationCallbacks = new WeakMap<Element, () => void>();
+let sharedObserver: IntersectionObserver | null = null;
+
+function getSharedObserver() {
+  if (typeof window === "undefined") return null;
+
+  if (!sharedObserver) {
+    sharedObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+
+          const callback = animationCallbacks.get(entry.target);
+          if (!callback) return;
+
+          animationCallbacks.delete(entry.target);
+          sharedObserver?.unobserve(entry.target);
+          callback();
+        });
+      },
+      { threshold: START_THRESHOLD },
+    );
+  }
+
+  return sharedObserver;
+}
+
 export default function CountUp({
   value,
   prefix = "",
@@ -29,41 +57,65 @@ export default function CountUp({
   duration = 1400,
 }: CountUpProps) {
   const ref = useRef<HTMLSpanElement>(null);
-  const [display, setDisplay] = useState("0");
   const triggered = useRef(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting || triggered.current) return;
-        triggered.current = true;
-        observer.disconnect();
+    let raf = 0;
+    let cancelled = false;
 
-        const start = performance.now();
-        const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+    const writeValue = (current: number) => {
+      el.textContent = `${prefix}${format(current, decimals, separator)}${suffix}`;
+    };
 
-        function tick(now: number) {
-          const progress = Math.min((now - start) / duration, 1);
-          const current = value * easeOut(progress);
-          setDisplay(format(current, decimals, separator));
-          if (progress < 1) requestAnimationFrame(tick);
+    writeValue(0);
+
+    const startAnimation = () => {
+      if (triggered.current) return;
+      triggered.current = true;
+
+      const start = performance.now();
+      const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+
+      const tick = (now: number) => {
+        if (cancelled) return;
+
+        const progress = Math.min((now - start) / duration, 1);
+        writeValue(value * easeOut(progress));
+
+        if (progress < 1) {
+          raf = window.requestAnimationFrame(tick);
         }
+      };
 
-        requestAnimationFrame(tick);
-      },
-      { threshold: 0.3 }
-    );
+      raf = window.requestAnimationFrame(tick);
+    };
 
+    const observer = getSharedObserver();
+    if (!observer) {
+      startAnimation();
+      return () => {
+        cancelled = true;
+        window.cancelAnimationFrame(raf);
+      };
+    }
+
+    animationCallbacks.set(el, startAnimation);
     observer.observe(el);
-    return () => observer.disconnect();
-  }, [value, decimals, separator, duration]);
+
+    return () => {
+      cancelled = true;
+      window.cancelAnimationFrame(raf);
+      animationCallbacks.delete(el);
+      observer.unobserve(el);
+    };
+  }, [value, prefix, suffix, decimals, separator, duration]);
 
   return (
     <span ref={ref}>
-      {prefix}{display}{suffix}
+      {prefix}{format(0, decimals, separator)}{suffix}
     </span>
   );
 }

@@ -1,7 +1,7 @@
-"use client";
 // chairs case page
 import Link from "next/link";
 import CountUp from "../../components/CountUp";
+import InfinityMark from "../../components/InfinityMark";
 import { GlowCard } from "../../components/GlowCard";
 
 const FONT = "Helvetica Neue, Helvetica, Arial, sans-serif";
@@ -11,6 +11,11 @@ const sectionStyle = {
   width: "100%",
   minHeight: "100svh",
   overflow: "clip",
+};
+
+const deferredSectionStyle = {
+  contentVisibility: "auto" as const,
+  containIntrinsicSize: "1000px",
 };
 
 const CHAIRS_WB_SCREENSHOT_IMG = "/screenshots/chairs-wb.jpg";
@@ -135,10 +140,9 @@ export default function CaseChairsPage() {
     </div>
 
     {/* CaseChairsWbSection */}
-    <section style={{ ...sectionStyle, minHeight: "max(100svh, calc(32.3vw + 260px))", backgroundColor: "#ffffff" }}>
+    <section style={{ ...sectionStyle, ...deferredSectionStyle, minHeight: "max(100svh, calc(32.3vw + 260px))", backgroundColor: "#ffffff" }}>
       <div className="chairs-infinity" style={{ position: "absolute", left: "2.81vw", top: "5.09vh", width: "clamp(50px, 6.09vw, 117px)", height: "clamp(26px, 5.56vh, 60px)", pointerEvents: "none", overflow: "hidden" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img alt="" src="/figma-assets/infinity-light.png" style={{ position: "absolute", width: "206.91%", height: "405.54%", left: "-52.74%", top: "-148.71%", maxWidth: "none" }} />
+        <InfinityMark src="/figma-assets/infinity-light.png" mixBlendMode="normal" />
       </div>
       <div
         style={{
@@ -173,7 +177,7 @@ export default function CaseChairsPage() {
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img alt="" src={CHAIRS_WB_SCREENSHOT_IMG} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />
+        <img alt="" src={CHAIRS_WB_SCREENSHOT_IMG} loading="lazy" decoding="async" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />
       </div>
       <div
         style={{
@@ -200,10 +204,9 @@ export default function CaseChairsPage() {
     </section>
 
     {/* CaseChairsScreenshotSection */}
-    <section style={{ ...sectionStyle, minHeight: "max(100svh, calc(37.41vw + 340px))", backgroundColor: "#ffffff" }}>
+    <section style={{ ...sectionStyle, ...deferredSectionStyle, minHeight: "max(100svh, calc(37.41vw + 340px))", backgroundColor: "#ffffff" }}>
       <div className="chairs-infinity" style={{ position: "absolute", left: "2.81vw", top: "5.09vh", width: "clamp(50px, 6.09vw, 117px)", height: "clamp(26px, 5.56vh, 60px)", pointerEvents: "none", overflow: "hidden" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img alt="" src="/figma-assets/infinity-light.png" style={{ position: "absolute", width: "206.91%", height: "405.54%", left: "-52.74%", top: "-148.71%", maxWidth: "none" }} />
+        <InfinityMark src="/figma-assets/infinity-light.png" mixBlendMode="normal" />
       </div>
       <div
         className="chairs-ozon-badge"
@@ -238,7 +241,7 @@ export default function CaseChairsPage() {
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img alt="" src={CHAIRS_SCREENSHOT_IMG} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />
+        <img alt="" src={CHAIRS_SCREENSHOT_IMG} loading="lazy" decoding="async" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />
       </div>
       <div
         style={{
@@ -265,7 +268,7 @@ export default function CaseChairsPage() {
     </section>
 
     {/* CaseChairsSection */}
-    <section className="chairs-margin-section" style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#ffffff" }}>
+    <section className="chairs-margin-section" style={{ ...sectionStyle, ...deferredSectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#ffffff" }}>
       <div
         className="chairs-margin-badge"
         style={{
@@ -322,6 +325,8 @@ export default function CaseChairsPage() {
         alt=""
         className="chairs-margin-graph"
         src="/chairs-graph.svg"
+        loading="lazy"
+        decoding="async"
         style={{
           position: "absolute",
           left: "-0.3125vw",

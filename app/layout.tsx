@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ScrollAnimations } from "./components/ScrollAnimations";
+import RoutePrefetch from "./components/RoutePrefetch";
+import { ScrollAnimationsOptimized } from "./components/ScrollAnimationsOptimized";
 
 export const metadata: Metadata = {
   title: "PROстранство — Получить разбор",
@@ -16,7 +17,13 @@ export default function RootLayout({
     <html lang="ru" data-scroll-behavior="smooth">
       <body>
         {children}
-        <ScrollAnimations />
+        <RoutePrefetch
+          routes={["/form"]}
+          delayMs={1200}
+          batchSize={1}
+          batchDelayMs={0}
+        />
+        <ScrollAnimationsOptimized />
       </body>
     </html>
   );

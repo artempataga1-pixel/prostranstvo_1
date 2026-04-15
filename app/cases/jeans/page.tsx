@@ -1,8 +1,7 @@
-"use client";
 import Link from "next/link";
 import CountUp from "../../components/CountUp";
 import { GlowCard } from "../../components/GlowCard";
-import InfinityAnimation from "../../components/InfinityAnimation";
+import InfinityMark from "../../components/InfinityMark";
 
 const FONT = "Helvetica Neue, Helvetica, Arial, sans-serif";
 
@@ -11,6 +10,11 @@ const sectionStyle = {
   width: "100%",
   minHeight: "100svh",
   overflow: "clip",
+};
+
+const deferredSectionStyle = {
+  contentVisibility: "auto" as const,
+  containIntrinsicSize: "1000px",
 };
 
 const OZON_SCREENSHOT_IMG = "/screenshots/jeans-ozon.jpg";
@@ -144,6 +148,7 @@ export default function CaseJeansPage() {
       className="jeans-revenue-section"
       style={{
         ...sectionStyle,
+        ...deferredSectionStyle,
         minHeight: "max(100svh, 760px)",
         backgroundColor: "#0d1f1f",
       }}
@@ -215,6 +220,8 @@ export default function CaseJeansPage() {
         alt=""
         className="jeans-graph"
         src="/jeans-graph.svg"
+        loading="lazy"
+        decoding="async"
         style={{
           position: "absolute",
           left: "-110.9vw",
@@ -307,12 +314,13 @@ export default function CaseJeansPage() {
       className="jeans-screenshot-section"
       style={{
         ...sectionStyle,
+        ...deferredSectionStyle,
         minHeight: "max(100svh, calc(37.41vw + 340px))",
         backgroundColor: "#0d1f1f",
       }}
     >
       <div className="jeans-infinity" style={{ position: "absolute", left: "2.76vw", top: "5vh", width: "clamp(50px, 6.09vw, 117px)", height: "clamp(26px, 5.56vh, 60px)", pointerEvents: "none" }}>
-        <InfinityAnimation />
+        <InfinityMark />
       </div>
 
       <div
@@ -353,6 +361,8 @@ export default function CaseJeansPage() {
         <img
           alt=""
           src={OZON_SCREENSHOT_IMG}
+          loading="lazy"
+          decoding="async"
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }}
         />
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
 const ACCENT = "#0ABAB5";
@@ -121,7 +122,7 @@ function QrCard({ src, label, href }: { src: string; label: string; href: string
         transition: "box-shadow 0.2s",
       }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt={label} style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
+        <img src={src} alt={label} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
       </div>
       {/* Label */}
       <div style={{ textAlign: "center" }}>
@@ -156,8 +157,9 @@ function QrCard({ src, label, href }: { src: string; label: string; href: string
 function CtaButton() {
   const [hovered, setHovered] = useState(false);
   return (
-    <a
+    <Link
       href="/form"
+      prefetch
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -186,7 +188,7 @@ function CtaButton() {
         style={{ transform: hovered ? "translateX(3px)" : "translateX(0)", transition: "transform 0.2s" }}>
         <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
-    </a>
+    </Link>
   );
 }
 

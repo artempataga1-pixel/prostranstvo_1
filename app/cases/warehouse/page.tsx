@@ -1,7 +1,7 @@
-"use client";
 import Link from "next/link";
+import Image from "next/image";
 import CountUp from "../../components/CountUp";
-import InfinityAnimation from "../../components/InfinityAnimation";
+import InfinityMark from "../../components/InfinityMark";
 import { GlowCard } from "../../components/GlowCard";
 
 const FONT = "Helvetica Neue, Helvetica, Arial, sans-serif";
@@ -11,6 +11,11 @@ const sectionStyle = {
   width: "100%",
   minHeight: "100svh",
   overflow: "clip",
+};
+
+const deferredSectionStyle = {
+  contentVisibility: "auto" as const,
+  containIntrinsicSize: "1000px",
 };
 
 const WAREHOUSE_STEPS = [
@@ -136,6 +141,7 @@ export default function CaseWarehousePage() {
       <section
         style={{
           ...sectionStyle,
+          ...deferredSectionStyle,
           minHeight: "max(100svh, 780px)",
           background: "linear-gradient(156deg, #071518 0%, #0a2425 46%, #0d4e4f 120%)",
         }}
@@ -214,13 +220,14 @@ export default function CaseWarehousePage() {
       <section
         style={{
           ...sectionStyle,
+          ...deferredSectionStyle,
           minHeight: "max(100svh, 820px)",
           background: "linear-gradient(180deg, #071518 0%, #0b2021 100%)",
         }}
       >
         <div style={{ position: "absolute", inset: 0, background: "radial-gradient(48% 70% at 84% 76%, rgba(10, 186, 181, 0.14) 0%, rgba(10, 186, 181, 0) 72%)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", left: "2.81vw", top: "5.09vh", width: "clamp(50px, 6.09vw, 117px)", height: "clamp(26px, 5.56vh, 60px)", pointerEvents: "none" }}>
-          <InfinityAnimation />
+          <InfinityMark />
         </div>
         <div style={{ position: "absolute", top: "clamp(30px, 5.56vh, 60px)", right: "3.125vw", display: "flex", alignItems: "center", padding: "clamp(8px, 1.11vh, 12px) clamp(10px, 0.83vw, 16px)", borderRadius: "300px", background: "rgba(255, 255, 255, 0.08)", border: "1px solid rgba(255,255,255,0.12)", backdropFilter: "blur(15px)", WebkitBackdropFilter: "blur(15px)", zIndex: 2 }}>
           <p style={{ fontFamily: FONT, fontWeight: 400, fontSize: "clamp(10px, 1.302vw, 25px)", lineHeight: 1, letterSpacing: "-0.035em", color: "#ffffff", textTransform: "uppercase", whiteSpace: "nowrap", margin: 0 }}>
@@ -245,8 +252,9 @@ export default function CaseWarehousePage() {
         >
           <div style={{ display: "flex", flexDirection: "column", gap: "clamp(16px, 2vh, 22px)" }}>
             <GlowCard glowColor="teal" style={{ background: "#ffffff", borderRadius: "30px", padding: "clamp(10px, 1vw, 16px)", boxShadow: "0 30px 80px rgba(0, 0, 0, 0.18)" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img alt="План склада" src="/warehouse-plan.jpg" style={{ display: "block", width: "100%", height: "clamp(340px, 64vh, 690px)", objectFit: "contain", objectPosition: "center", borderRadius: "22px", background: "#ffffff" }} />
+              <div style={{ position: "relative", width: "100%", height: "clamp(340px, 64vh, 690px)", borderRadius: "22px", background: "#ffffff", overflow: "hidden" }}>
+                <Image alt="План склада" src="/warehouse-plan.jpg" fill sizes="(max-width: 768px) 100vw, 44vw" decoding="async" style={{ objectFit: "contain", objectPosition: "center" }} />
+              </div>
             </GlowCard>
             <p style={{ fontFamily: FONT, fontWeight: 400, fontSize: "clamp(13px, 1.15vw, 22px)", lineHeight: 1.15, letterSpacing: "-0.035em", color: "#ffffff", opacity: 0.5, margin: 0 }}>
               План помещения, АБС-распределение зон хранения и логика движения товарного потока по складу.

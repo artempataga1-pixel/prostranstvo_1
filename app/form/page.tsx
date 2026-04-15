@@ -1,11 +1,8 @@
-"use client";
-
-import { useState, useRef } from "react";
 import Link from "next/link";
-import LeadForm from "../components/LeadForm";
-import FloatingShapes from "../components/FloatingShapes";
-import InfinityAnimation from "../components/InfinityAnimation";
-import ShaderBackground from "../components/ShaderBackground";
+import FloatingShapesOptimized from "../components/FloatingShapesOptimized";
+import InfinityMark from "../components/InfinityMark";
+import ShaderBackgroundOptimized from "../components/ShaderBackgroundOptimized";
+import FormLeadCardClient from "../components/FormLeadCardClient";
 
 const font = "Helvetica Neue, Helvetica, Arial, sans-serif";
 const ACCENT = "#0ABAB5";
@@ -24,19 +21,6 @@ const STATS = [
 ];
 
 export default function FormPage() {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [mouse, setMouse] = useState({ x: 0.5, y: 0.5 });
-  const [cardHover, setCardHover] = useState(false);
-
-  function onMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    setMouse({
-      x: (e.clientX - rect.left) / rect.width,
-      y: (e.clientY - rect.top) / rect.height,
-    });
-  }
-
   return (
     <main
       style={{
@@ -52,6 +36,8 @@ export default function FormPage() {
       <img
         alt=""
         src="/bg.png"
+        loading="eager"
+        decoding="async"
         style={{
           position: "absolute",
           inset: 0,
@@ -66,12 +52,12 @@ export default function FormPage() {
 
       {/* ── WebGL shader — same teal nebula as hero ── */}
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1 }}>
-        <ShaderBackground />
+        <ShaderBackgroundOptimized />
       </div>
 
       {/* ── Floating shapes ── */}
       <div style={{ position: "absolute", inset: 0, zIndex: 1, opacity: 0.25, pointerEvents: "none" }}>
-        <FloatingShapes />
+        <FloatingShapesOptimized />
       </div>
 
       {/* ── Ambient glow blobs ── */}
@@ -188,7 +174,7 @@ export default function FormPage() {
             height: "clamp(31px, 3.125vw, 60px)",
             pointerEvents: "none",
           }}>
-            <InfinityAnimation />
+            <InfinityMark loading="eager" />
           </div>
         </div>
       </header>
@@ -319,122 +305,7 @@ export default function FormPage() {
         {/* ═══════════════════════════════
             RIGHT COLUMN — Form card
         ═══════════════════════════════ */}
-        <div
-          style={{ position: "relative", animation: "fade-in-up 0.7s ease 0.15s both" }}
-          ref={cardRef}
-          onMouseMove={onMouseMove}
-          onMouseEnter={() => setCardHover(true)}
-          onMouseLeave={() => setCardHover(false)}
-        >
-          {/* Card */}
-          <div style={{
-            background: "rgba(255,255,255,0.03)",
-            borderRadius: "clamp(20px, 1.6vw, 32px)",
-            padding: "clamp(28px, 4vh, 52px) clamp(24px, 3vw, 48px)",
-            backdropFilter: "blur(24px)",
-            WebkitBackdropFilter: "blur(24px)",
-            boxShadow: "0 0 0 1px rgba(10,186,181,0.06), 0 40px 100px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04)",
-            position: "relative",
-            overflow: "hidden",
-          }}>
-
-            {/* Cursor-tracking glow */}
-            <div style={{
-              position: "absolute",
-              left: `${mouse.x * 100}%`,
-              top: `${mouse.y * 100}%`,
-              transform: "translate(-50%, -50%)",
-              width: "520px", height: "520px",
-              borderRadius: "50%",
-              background: "radial-gradient(circle, rgba(10,186,181,0.11) 0%, transparent 60%)",
-              opacity: cardHover ? 1 : 0,
-              transition: "opacity 0.4s ease",
-              pointerEvents: "none",
-              zIndex: 0,
-            }} />
-
-            {/* Animated traveling glow border */}
-            <svg
-              style={{
-                position: "absolute", inset: 0,
-                width: "100%", height: "100%",
-                overflow: "visible", pointerEvents: "none",
-                zIndex: 1,
-              }}
-            >
-              <defs>
-                <filter id="form-border-glow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="3" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-              </defs>
-              {/* Static dim border */}
-              <rect
-                x="0.5" y="0.5"
-                rx="28"
-                ry="28"
-                width="calc(100% - 1px)"
-                height="calc(100% - 1px)"
-                fill="none"
-                stroke="rgba(255,255,255,0.07)"
-                strokeWidth="1"
-              />
-              {/* Traveling beam */}
-              <rect
-                x="0.5" y="0.5"
-                rx="28"
-                ry="28"
-                width="calc(100% - 1px)"
-                height="calc(100% - 1px)"
-                fill="none"
-                stroke={ACCENT}
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                pathLength="1"
-                strokeDasharray="0.06 0.94"
-                strokeDashoffset="0"
-                style={{
-                  animation: "form-beam-travel 5s linear infinite",
-                  filter: "url(#form-border-glow)",
-                  opacity: 0.85,
-                }}
-              />
-            </svg>
-
-            {/* Top accent line */}
-            <div style={{
-              position: "absolute", top: 0, left: "15%", width: "70%", height: "1px",
-              background: "linear-gradient(90deg, transparent, rgba(10,186,181,0.55), transparent)",
-              zIndex: 2,
-            }} />
-
-            {/* Content */}
-            <div style={{ position: "relative", zIndex: 3 }}>
-              <p style={{
-                fontFamily: font, fontWeight: 400,
-                fontSize: "clamp(20px, 1.6vw, 30px)",
-                letterSpacing: "-0.035em",
-                color: "#ffffff",
-                marginBottom: "4px", marginTop: 0,
-              }}>
-                Оставить заявку
-              </p>
-              <p style={{
-                fontFamily: font,
-                fontSize: "clamp(12px, 0.8vw, 15px)",
-                color: "rgba(255,255,255,0.32)",
-                letterSpacing: "-0.01em",
-                marginBottom: "clamp(22px, 3vh, 34px)", marginTop: 0,
-              }}>
-                Ответим в течение 15 минут и запишем на разбор
-              </p>
-              <LeadForm />
-            </div>
-          </div>
-        </div>
+        <FormLeadCardClient />
 
       </div>
 

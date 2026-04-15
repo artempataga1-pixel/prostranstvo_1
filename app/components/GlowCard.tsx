@@ -121,48 +121,117 @@ export function GlowCard({ children, style, className, white = false, glowColor 
   const ref = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ w: 0, h: 0 });
   const [hovered, setHovered] = useState(false);
+  const [isNearViewport, setIsNearViewport] = useState(false);
+  const [isDocumentVisible, setIsDocumentVisible] = useState(true);
+  const canHoverRef = useRef(false);
+  const hoverFrameRef = useRef(0);
 
   const colorKey = white ? "white" : (glowColor ?? "blue");
   const { hue, stroke, dimStroke, shadowGlow, shadowGlowFar } = COLOR_MAP[colorKey] ?? COLOR_MAP.blue;
+  const shouldAnimate = isNearViewport && isDocumentVisible;
 
   useEffect(() => { ensureGlobalCSS(); }, []);
 
-  // Track card size for SVG beam
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const update = () => setDims({ w: el.offsetWidth, h: el.offsetHeight });
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsNearViewport(entry?.isIntersecting ?? false);
+      },
+      { rootMargin: "220px" },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      setIsDocumentVisible(document.visibilityState === "visible");
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, []);
+
+  // Track card size for SVG beam only when it is near the viewport.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !isNearViewport) return;
+
+    const update = () => {
+      const nextDims = { w: el.offsetWidth, h: el.offsetHeight };
+      setDims((prev) => (prev.w === nextDims.w && prev.h === nextDims.h ? prev : nextDims));
+    };
+
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [isNearViewport]);
 
   // Mouse tracking + hover state
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
-    const onMove = (e: PointerEvent) => {
-      const rect = el.getBoundingClientRect();
-      el.style.setProperty("--lx", `${(e.clientX - rect.left).toFixed(1)}px`);
-      el.style.setProperty("--ly", `${(e.clientY - rect.top).toFixed(1)}px`);
+    canHoverRef.current = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    if (!canHoverRef.current) return;
+
+    let rect: DOMRect | null = null;
+    let pointerX = -999;
+    let pointerY = -999;
+
+    const flushPointer = () => {
+      hoverFrameRef.current = 0;
+      el.style.setProperty("--lx", `${pointerX.toFixed(1)}px`);
+      el.style.setProperty("--ly", `${pointerY.toFixed(1)}px`);
     };
-    const onEnter = () => { el.setAttribute("data-hovered", ""); setHovered(true); };
+
+    const onMove = (event: PointerEvent) => {
+      if (!rect) {
+        rect = el.getBoundingClientRect();
+      }
+
+      pointerX = event.clientX - rect.left;
+      pointerY = event.clientY - rect.top;
+
+      if (hoverFrameRef.current !== 0) return;
+      hoverFrameRef.current = window.requestAnimationFrame(flushPointer);
+    };
+
+    const onEnter = () => {
+      rect = el.getBoundingClientRect();
+      el.setAttribute("data-hovered", "");
+      setHovered(true);
+      el.addEventListener("pointermove", onMove, { passive: true });
+    };
+
     const onLeave = () => {
+      el.removeEventListener("pointermove", onMove);
+      rect = null;
+      if (hoverFrameRef.current !== 0) {
+        window.cancelAnimationFrame(hoverFrameRef.current);
+        hoverFrameRef.current = 0;
+      }
       el.removeAttribute("data-hovered");
       el.style.setProperty("--lx", "-999px");
       el.style.setProperty("--ly", "-999px");
       setHovered(false);
     };
 
-    el.addEventListener("pointermove", onMove);
     el.addEventListener("pointerenter", onEnter);
     el.addEventListener("pointerleave", onLeave);
     return () => {
       el.removeEventListener("pointermove", onMove);
       el.removeEventListener("pointerenter", onEnter);
       el.removeEventListener("pointerleave", onLeave);
+      if (hoverFrameRef.current !== 0) {
+        window.cancelAnimationFrame(hoverFrameRef.current);
+        hoverFrameRef.current = 0;
+      }
     };
   }, []);
 
@@ -193,7 +262,7 @@ export function GlowCard({ children, style, className, white = false, glowColor 
     <div ref={ref} data-glow className={className} style={merged}>
 
       {/* ── Traveling border beam SVG ── */}
-      {w > 0 && (
+      {w > 0 && shouldAnimate && (
         <svg
           aria-hidden
           style={{
@@ -238,7 +307,7 @@ export function GlowCard({ children, style, className, white = false, glowColor 
       )}
 
       {/* ── Corner pulse dots ── */}
-      {CORNER_POSITIONS.map(({ key, pos }, i) => (
+      {shouldAnimate && CORNER_POSITIONS.map(({ key, pos }, i) => (
         <span
           key={key}
           style={{

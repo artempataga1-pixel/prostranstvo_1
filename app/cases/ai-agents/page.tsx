@@ -1,8 +1,7 @@
-"use client";
 import Link from "next/link";
 import CountUp from "../../components/CountUp";
 import { GlowCard } from "../../components/GlowCard";
-import NeuralNet3D from "../../components/NeuralNet3D";
+import { DeferredNeuralNet3D } from "../../components/DeferredSceneMounts";
 
 const FONT = "Helvetica Neue, Helvetica, Arial, sans-serif";
 
@@ -11,6 +10,11 @@ const sectionStyle = {
   width: "100%",
   minHeight: "100svh",
   overflow: "clip",
+};
+
+const deferredSectionStyle = {
+  contentVisibility: "auto" as const,
+  containIntrinsicSize: "1000px",
 };
 
 const metrics = [
@@ -131,7 +135,7 @@ export default function CaseAiAgentsPage() {
     </div>
 
     {/* CaseAIIntroSection */}
-    <section style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#0d0f1f" }}>
+    <section style={{ ...sectionStyle, ...deferredSectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#0d0f1f" }}>
       <div style={{ position: "absolute", right: "-8vw", top: "10vh", width: "55vw", height: "55vw", background: "radial-gradient(circle, rgba(139,92,246,0.10) 0%, transparent 65%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", left: "-5vw", bottom: "0", width: "40vw", height: "40vw", background: "radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 65%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", top: "clamp(30px, 5.56vh, 60px)", right: "3.125vw", display: "flex", alignItems: "center", padding: "clamp(8px, 1.11vh, 12px) clamp(10px, 0.83vw, 16px)", borderRadius: "300px", background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.3)", backdropFilter: "blur(15px)", WebkitBackdropFilter: "blur(15px)" }}>
@@ -208,7 +212,7 @@ export default function CaseAiAgentsPage() {
     </section>
 
     {/* CaseAIStepsSection */}
-    <section style={{ ...sectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#0a0d1a" }}>
+    <section style={{ ...sectionStyle, ...deferredSectionStyle, minHeight: "max(100svh, 760px)", backgroundColor: "#0a0d1a" }}>
       <div style={{ position: "absolute", left: "50%", top: "-10vh", transform: "translateX(-50%)", width: "80vw", height: "40vw", background: "radial-gradient(ellipse, rgba(139,92,246,0.07) 0%, transparent 65%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", left: "3.125vw", top: "clamp(30px, 5.56vh, 60px)", display: "flex", alignItems: "baseline", gap: "clamp(12px, 1.5vw, 28px)" }}>
         <h2 style={{ fontFamily: FONT, fontWeight: 400, fontSize: "clamp(28px, 4.167vw, 80px)", lineHeight: 0.9, letterSpacing: "-0.04em", color: "#ffffff", margin: 0, whiteSpace: "nowrap" }}>
@@ -235,7 +239,7 @@ export default function CaseAiAgentsPage() {
         ))}
       </div>
       <div style={{ position: "absolute", right: "3.125vw", top: "50%", transform: "translateY(-50%)", width: "clamp(260px, 44vw, 820px)", height: "clamp(260px, 44vw, 820px)", pointerEvents: "none" }}>
-        <NeuralNet3D />
+        <DeferredNeuralNet3D />
       </div>
     </section>
 
