@@ -59,7 +59,8 @@ export default function FloatingShapesOptimized() {
   const ref = useRef<HTMLDivElement>(null);
   const [isNearViewport, setIsNearViewport] = useState(true);
   const [isDocumentVisible, setIsDocumentVisible] = useState(true);
-  const shouldFloat = isNearViewport && isDocumentVisible;
+  const [allowMotion, setAllowMotion] = useState(false);
+  const shouldFloat = allowMotion && isNearViewport && isDocumentVisible;
 
   useEffect(() => {
     const node = ref.current;
@@ -83,6 +84,42 @@ export default function FloatingShapesOptimized() {
 
     document.addEventListener("visibilitychange", onVisibilityChange);
     return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, []);
+
+  useEffect(() => {
+    const browserWindow = window as Window & {
+      requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+    let frameHandle: number | undefined;
+
+    if (window.innerWidth >= 768) {
+      frameHandle = window.requestAnimationFrame(() => {
+        setAllowMotion(true);
+      });
+      return;
+    }
+
+    let handle: number | undefined;
+    const enableMotion = () => setAllowMotion(true);
+
+    if (browserWindow.requestIdleCallback) {
+      handle = browserWindow.requestIdleCallback(enableMotion, { timeout: 1200 });
+    } else {
+      handle = window.setTimeout(enableMotion, 700);
+    }
+
+    return () => {
+      if (frameHandle !== undefined) {
+        window.cancelAnimationFrame(frameHandle);
+      }
+      if (handle === undefined) return;
+      if (browserWindow.cancelIdleCallback) {
+        browserWindow.cancelIdleCallback(handle);
+      } else {
+        window.clearTimeout(handle);
+      }
+    };
   }, []);
 
   return (

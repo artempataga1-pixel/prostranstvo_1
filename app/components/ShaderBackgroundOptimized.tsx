@@ -107,9 +107,15 @@ export default function ShaderBackgroundOptimized() {
     let isDocumentVisible = document.visibilityState === "visible";
     let isRunning = false;
     let lastFrameTime = 0;
+    let allowAnimation = false;
+    let idleHandle: number | undefined;
 
     const isMobileViewport = () => window.innerWidth < 768;
     const getFrameInterval = () => (isMobileViewport() ? 1000 / 30 : 1000 / 45);
+    const browserWindow = window as Window & {
+      requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
 
     const renderFrame = (now: number) => {
       glContext.useProgram(prog);
@@ -119,7 +125,7 @@ export default function ShaderBackgroundOptimized() {
     };
 
     const updateRunningState = () => {
-      const shouldRun = isVisible && isDocumentVisible;
+      const shouldRun = allowAnimation && isVisible && isDocumentVisible;
       if (shouldRun === isRunning) return;
 
       isRunning = shouldRun;
@@ -131,6 +137,29 @@ export default function ShaderBackgroundOptimized() {
       }
     };
 
+    const enableAnimationLoop = () => {
+      allowAnimation = true;
+      updateRunningState();
+    };
+
+    const scheduleAnimationLoop = () => {
+      if (!isMobileViewport()) {
+        enableAnimationLoop();
+        return;
+      }
+
+      if (browserWindow.requestIdleCallback) {
+        idleHandle = browserWindow.requestIdleCallback(() => {
+          enableAnimationLoop();
+        }, { timeout: 1200 });
+        return;
+      }
+
+      idleHandle = window.setTimeout(() => {
+        enableAnimationLoop();
+      }, 700);
+    };
+
     function resize() {
       const baseDpr = Math.min(window.devicePixelRatio || 1, 2);
       const dpr = isMobileViewport()
@@ -140,6 +169,10 @@ export default function ShaderBackgroundOptimized() {
       canvasEl.width = Math.max(1, Math.round(canvasEl.offsetWidth * dpr));
       canvasEl.height = Math.max(1, Math.round(canvasEl.offsetHeight * dpr));
       glContext.viewport(0, 0, canvasEl.width, canvasEl.height);
+
+      if (!allowAnimation && !isMobileViewport()) {
+        enableAnimationLoop();
+      }
     }
 
     function loop(now: number) {
@@ -171,13 +204,20 @@ export default function ShaderBackgroundOptimized() {
     window.addEventListener("resize", resize);
     document.addEventListener("visibilitychange", onVisibilityChange);
     renderFrame(performance.now());
-    updateRunningState();
+    scheduleAnimationLoop();
 
     return () => {
       window.cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
       document.removeEventListener("visibilitychange", onVisibilityChange);
       observer.disconnect();
+      if (idleHandle !== undefined) {
+        if (browserWindow.cancelIdleCallback) {
+          browserWindow.cancelIdleCallback(idleHandle);
+        } else {
+          window.clearTimeout(idleHandle);
+        }
+      }
       glContext.deleteBuffer(buf);
       glContext.deleteProgram(prog);
       glContext.deleteShader(vs);

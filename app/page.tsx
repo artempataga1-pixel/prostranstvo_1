@@ -21,6 +21,7 @@ import {
   DeferredContactsSection,
   DeferredOrbitalCasesTimeline,
 } from "./components/DeferredContentBlocks";
+import DeferredServicesSections from "./components/DeferredServicesSections";
 import {
   DeferredCRM3D,
   DeferredCube3D,
@@ -4823,6 +4824,15 @@ function OrbitalSection() {
 void [
   CaseRevenueSection,
   CaseScreenshotSection,
+  ServicesSection,
+  ServicesAuditSection,
+  ServicesExternalSection,
+  ServicesAiSection,
+  ServicesAccountingSection,
+  ServicesManagementSection,
+  ServicesPodborSection,
+  ServicesTeamSection,
+  ServicesHrTeamSection,
   SERVICES_INFINITY_IMG,
   EXT_STRIP1_IMG,
   EXT_STRIP2_IMG,
@@ -4858,15 +4868,7 @@ export default function Page() {
       <FadeIn><WhyChooseUsSection /></FadeIn>
       <FadeIn><CasesSection /></FadeIn>
       <FadeIn><OrbitalSection /></FadeIn>
-      <FadeIn><ServicesSection /></FadeIn>
-      <FadeIn><ServicesPodborSection /></FadeIn>
-      <FadeIn><ServicesAuditSection /></FadeIn>
-      <FadeIn><ServicesManagementSection /></FadeIn>
-      <FadeIn><ServicesAiSection /></FadeIn>
-      <FadeIn><ServicesAccountingSection /></FadeIn>
-      <FadeIn><ServicesExternalSection /></FadeIn>
-      <FadeIn><ServicesTeamSection /></FadeIn>
-      <FadeIn><ServicesHrTeamSection /></FadeIn>
+      <DeferredServicesSections />
       <FadeIn><WorkWithUsSection /></FadeIn>
       <FadeIn><FaqSection /></FadeIn>
       <FadeIn><DeferredContactsSection /></FadeIn>
