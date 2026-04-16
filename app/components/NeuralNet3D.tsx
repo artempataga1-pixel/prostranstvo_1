@@ -24,7 +24,7 @@ export default function NeuralNet3D() {
       const w = mount.clientWidth || 400;
       const h = mount.clientHeight || 400;
 
-      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, premultipliedAlpha: false });
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, premultipliedAlpha: false, powerPreference: "high-performance" });
       renderer.setPixelRatio(Math.min(devicePixelRatio, window.innerWidth < 768 ? 1.1 : 1.5));
       renderer.setSize(w, h);
       renderer.setClearColor(0x000000, 0);

@@ -99,6 +99,9 @@ export default function ShaderBackground() {
 
     let raf = 0;
     let stopped = false;
+    // Throttle к 30fps — шейдер тяжёлый, разница 30→60fps визуально незаметна
+    const TARGET_INTERVAL = 1000 / 30;
+    let lastTime = 0;
 
     function resize() {
       if (!canvas) return;
@@ -110,11 +113,13 @@ export default function ShaderBackground() {
     }
 
     function loop(now: number) {
+      raf = requestAnimationFrame(loop);
+      if (now - lastTime < TARGET_INTERVAL) return;
+      lastTime = now;
       gl!.useProgram(prog);
       gl!.uniform2f(uRes, canvas!.width, canvas!.height);
       gl!.uniform1f(uTime, now * 1e-3);
       gl!.drawArrays(gl!.TRIANGLE_STRIP, 0, 4);
-      raf = requestAnimationFrame(loop);
     }
 
     // IntersectionObserver — останавливаем RAF когда canvas вне viewport
@@ -135,9 +140,11 @@ export default function ShaderBackground() {
 
     resize();
     window.addEventListener("resize", resize);
-    raf = requestAnimationFrame(loop);
+    // Запускаем с задержкой 300мс — даём HeroSphere и DataCrystal3D инициализироваться первыми
+    const startTimer = setTimeout(() => { raf = requestAnimationFrame(loop); }, 300);
 
     return () => {
+      clearTimeout(startTimer);
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
       observer.disconnect();

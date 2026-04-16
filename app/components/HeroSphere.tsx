@@ -16,6 +16,7 @@ export default function HeroSphere() {
 
     let animId = 0;
     let disposed = false;
+    let startTimer: ReturnType<typeof setTimeout>;
 
     async function init() {
       const THREE = await import("three");
@@ -23,7 +24,7 @@ export default function HeroSphere() {
       const w = mount.clientWidth;
       const h = mount.clientHeight;
 
-      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, premultipliedAlpha: false });
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, premultipliedAlpha: false, powerPreference: "high-performance" });
       renderer.setPixelRatio(Math.min(devicePixelRatio, window.innerWidth < 768 ? 1.1 : 1.5));
       renderer.setSize(w, h);
       renderer.setClearColor(0x000000, 0);
@@ -159,8 +160,10 @@ export default function HeroSphere() {
       };
     }
 
-    init();
+    // Небольшая задержка чтобы не конкурировать с DataCrystal3D и ShaderBackground при старте
+    startTimer = setTimeout(() => { void init(); }, 150);
     return () => {
+      clearTimeout(startTimer);
       disposed = true;
       mount.__cleanup?.();
     };

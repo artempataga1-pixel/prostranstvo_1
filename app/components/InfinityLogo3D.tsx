@@ -43,7 +43,7 @@ export default function InfinityLogo3D() {
       const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
       camera.position.z = 4.2;
 
-      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth < 768 ? 1.1 : 1.5));
       renderer.setSize(w, h);
       renderer.setClearColor(0x000000, 0);
@@ -53,7 +53,7 @@ export default function InfinityLogo3D() {
       const TUBE_SEGMENTS = 200;
 
       // ── Core glowing tube ─────────────────────────────────────────
-      const coreGeo = new THREE.TubeGeometry(curve, TUBE_SEGMENTS, 0.055, 16, true);
+      const coreGeo = new THREE.TubeGeometry(curve, TUBE_SEGMENTS, 0.055, 8, true);
       const coreMat = new THREE.ShaderMaterial({
         uniforms: {
           uTime: { value: 0 },
@@ -110,7 +110,7 @@ export default function InfinityLogo3D() {
       scene.add(coreTube);
 
       // ── Mid glow tube ─────────────────────────────────────────────
-      const midGeo = new THREE.TubeGeometry(curve, TUBE_SEGMENTS, 0.13, 14, true);
+      const midGeo = new THREE.TubeGeometry(curve, TUBE_SEGMENTS, 0.13, 8, true);
       const midMat = new THREE.ShaderMaterial({
         uniforms: { uTime: { value: 0 } },
         vertexShader: /* glsl */ `
@@ -140,7 +140,7 @@ export default function InfinityLogo3D() {
       scene.add(midTube);
 
       // ── Outer halo tube ───────────────────────────────────────────
-      const haloGeo = new THREE.TubeGeometry(curve, TUBE_SEGMENTS, 0.28, 12, true);
+      const haloGeo = new THREE.TubeGeometry(curve, TUBE_SEGMENTS, 0.28, 8, true);
       const haloMat = new THREE.ShaderMaterial({
         uniforms: { uTime: { value: 0 } },
         vertexShader: /* glsl */ `
