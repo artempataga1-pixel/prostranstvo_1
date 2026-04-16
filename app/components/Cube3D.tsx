@@ -94,9 +94,15 @@ export default function Cube3D() {
         new THREE.PointsMaterial({ color: 0x0abab5, size: 0.045, transparent: true, opacity: 0.42 }),
       ));
 
-      const animate = () => {
+      const isMobileScene = window.innerWidth < 768;
+      const frameInterval = isMobileScene ? 1000 / 24 : 0;
+      let lastFrameTime = 0;
+
+      const animate = (now: number) => {
         if (disposed) return;
         animId = requestAnimationFrame(animate);
+        if (frameInterval > 0 && now - lastFrameTime < frameInterval) return;
+        lastFrameTime = now;
         const t = Date.now() * 0.001;
 
         root.rotation.y = t * 0.22;
@@ -119,7 +125,7 @@ export default function Cube3D() {
 
       const startAnimation = () => {
         if (disposed || animId !== 0) return;
-        animId = requestAnimationFrame(animate);
+        animId = requestAnimationFrame(animate as FrameRequestCallback);
       };
 
       const activityController = createAnimationActivityController({

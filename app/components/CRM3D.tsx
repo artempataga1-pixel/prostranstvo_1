@@ -181,11 +181,16 @@ export default function CRM3D() {
       void WHITE;
 
       // ── Animation ─────────────────────────────────────────────────────────────
+      const isMobileScene = window.innerWidth < 768;
+      const frameInterval = isMobileScene ? 1000 / 24 : 0;
+      let lastFrameTime = 0;
       let t = 0;
-      const animate = () => {
+      const animate = (now: number) => {
         if (disposed) return;
         animId = requestAnimationFrame(animate);
-        t += 0.01;
+        if (frameInterval > 0 && now - lastFrameTime < frameInterval) return;
+        lastFrameTime = now;
+        t += isMobileScene ? 0.006 : 0.01;
 
         // Root float
         root.position.y = Math.sin(t * 0.5) * 0.08;
@@ -239,7 +244,7 @@ export default function CRM3D() {
 
       const startAnimation = () => {
         if (disposed || animId !== 0) return;
-        animId = requestAnimationFrame(animate);
+        animId = requestAnimationFrame(animate as FrameRequestCallback);
       };
 
       const activityController = createAnimationActivityController({

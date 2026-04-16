@@ -136,9 +136,15 @@ export default function NeuralNet3D() {
         new THREE.PointsMaterial({ color: PURPLE, size: 0.04, transparent: true, opacity: 0.32 }),
       ));
 
-      const animate = () => {
+      const isMobileScene = window.innerWidth < 768;
+      const frameInterval = isMobileScene ? 1000 / 24 : 0;
+      let lastFrameTime = 0;
+
+      const animate = (now: number) => {
         if (disposed) return;
         animId = requestAnimationFrame(animate);
+        if (frameInterval > 0 && now - lastFrameTime < frameInterval) return;
+        lastFrameTime = now;
         const t = Date.now() * 0.001;
 
         // Gentle oscillation
@@ -176,7 +182,7 @@ export default function NeuralNet3D() {
 
       const startAnimation = () => {
         if (disposed || animId !== 0) return;
-        animId = requestAnimationFrame(animate);
+        animId = requestAnimationFrame(animate as FrameRequestCallback);
       };
 
       const activityController = createAnimationActivityController({

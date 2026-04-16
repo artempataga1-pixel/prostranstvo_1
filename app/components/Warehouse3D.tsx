@@ -151,13 +151,18 @@ export default function Warehouse3D() {
       root.add(pMesh);
 
       // ── Animation ─────────────────────────────────────────────────────────────
+      const isMobileScene = window.innerWidth < 768;
+      const frameInterval = isMobileScene ? 1000 / 24 : 0;
+      let lastFrameTime = 0;
       let t = 0;
       let scanZ = -4;
 
-      const animate = () => {
+      const animate = (now: number) => {
         if (disposed) return;
         animId = requestAnimationFrame(animate);
-        t += 0.01;
+        if (frameInterval > 0 && now - lastFrameTime < frameInterval) return;
+        lastFrameTime = now;
+        t += isMobileScene ? 0.006 : 0.01;
 
         // Slow root rotation
         root.rotation.y = t * 0.07;
@@ -198,7 +203,7 @@ export default function Warehouse3D() {
 
       const startAnimation = () => {
         if (disposed || animId !== 0) return;
-        animId = requestAnimationFrame(animate);
+        animId = requestAnimationFrame(animate as FrameRequestCallback);
       };
 
       const activityController = createAnimationActivityController({
