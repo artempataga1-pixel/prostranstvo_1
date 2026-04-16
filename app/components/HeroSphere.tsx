@@ -16,8 +16,6 @@ export default function HeroSphere() {
 
     let animId = 0;
     let disposed = false;
-    let startTimer: ReturnType<typeof setTimeout>;
-
     async function init() {
       const THREE = await import("three");
       if (disposed) return;
@@ -161,7 +159,7 @@ export default function HeroSphere() {
     }
 
     // Небольшая задержка чтобы не конкурировать с DataCrystal3D и ShaderBackground при старте
-    startTimer = setTimeout(() => { void init(); }, 150);
+    const startTimer = setTimeout(() => { void init(); }, 150);
     return () => {
       clearTimeout(startTimer);
       disposed = true;

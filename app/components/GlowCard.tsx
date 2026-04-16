@@ -189,27 +189,52 @@ export function GlowCard({ children, style, className, white = false, glowColor 
   // hovered state removed — hover effects are now DOM-direct + CSS-driven, zero React re-renders
   const [isNearViewport, setIsNearViewport] = useState(false);
   const [isDocumentVisible, setIsDocumentVisible] = useState(true);
+  const [canHover, setCanHover] = useState(false);
   const canHoverRef = useRef(false);
   const hoverFrameRef = useRef(0);
 
   const colorKey = white ? "white" : (glowColor ?? "blue");
   const { hue, stroke, dimStroke, shadowGlow, shadowGlowFar } = COLOR_MAP[colorKey] ?? COLOR_MAP.blue;
-  const shouldAnimate = isNearViewport && isDocumentVisible;
+  const shouldAnimate = canHover && isNearViewport && isDocumentVisible;
 
   // Merge 3 one-time setup effects into 1 to reduce post-hydration scheduler work
   useEffect(() => {
     ensureGlobalCSS();
     const el = ref.current;
     if (!el) return;
-    const unsubVp  = observeViewport(el, setIsNearViewport);
+    const mediaQuery = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const syncCanHover = () => {
+      const nextCanHover = mediaQuery.matches;
+      canHoverRef.current = nextCanHover;
+      setCanHover((prev) => (prev === nextCanHover ? prev : nextCanHover));
+    };
+
+    syncCanHover();
+
+    const unsubscribeHover =
+      typeof mediaQuery.addEventListener === "function"
+        ? (() => {
+            mediaQuery.addEventListener("change", syncCanHover);
+            return () => mediaQuery.removeEventListener("change", syncCanHover);
+          })()
+        : (() => {
+            mediaQuery.addListener(syncCanHover);
+            return () => mediaQuery.removeListener(syncCanHover);
+          })();
+
+    const unsubVp = observeViewport(el, setIsNearViewport);
     const unsubVis = subscribeToVisibility(setIsDocumentVisible);
-    return () => { unsubVp(); unsubVis(); };
+    return () => {
+      unsubscribeHover();
+      unsubVp();
+      unsubVis();
+    };
   }, []);
 
   // Track card size for SVG beam only when it is near the viewport.
   useEffect(() => {
     const el = ref.current;
-    if (!el || !isNearViewport) return;
+    if (!el || !isNearViewport || !canHover) return;
 
     const update = () => {
       const nextDims = { w: el.offsetWidth, h: el.offsetHeight };
@@ -220,14 +245,13 @@ export function GlowCard({ children, style, className, white = false, glowColor 
     const ro = new ResizeObserver(update);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [isNearViewport]);
+  }, [canHover, isNearViewport]);
 
   // Mouse tracking — box-shadow + data-hovered set directly on DOM, no setState
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
-    canHoverRef.current = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
     if (!canHoverRef.current) return;
 
     const shadowHover = `0 0 0 1px ${shadowGlow}, 0 0 14px 2px ${shadowGlow}, 0 0 36px 6px ${shadowGlowFar}`;

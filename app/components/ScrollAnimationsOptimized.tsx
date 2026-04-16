@@ -18,8 +18,13 @@ export function ScrollAnimationsOptimized() {
     let disposed = false;
     let idleHandle: number | undefined;
     let timeoutHandle: number | undefined;
+    let interactionCleanup: (() => void) | undefined;
+    let started = false;
 
     const startAnimations = async () => {
+      if (started || disposed) return;
+      started = true;
+
       const [{ gsap }, { ScrollTrigger }, lenisModule] = await Promise.all([
         import("gsap"),
         import("gsap/ScrollTrigger"),
@@ -292,23 +297,48 @@ export function ScrollAnimationsOptimized() {
       };
     };
 
+    const startFromInteraction = () => {
+      interactionCleanup?.();
+      interactionCleanup = undefined;
+      void startAnimations().catch(console.error);
+    };
+
+    const subscribeForInteraction = () => {
+      const onFirstInteraction = () => {
+        startFromInteraction();
+      };
+
+      window.addEventListener("scroll", onFirstInteraction, { passive: true, once: true });
+      window.addEventListener("pointerdown", onFirstInteraction, { passive: true, once: true });
+      window.addEventListener("keydown", onFirstInteraction, { once: true });
+
+      return () => {
+        window.removeEventListener("scroll", onFirstInteraction);
+        window.removeEventListener("pointerdown", onFirstInteraction);
+        window.removeEventListener("keydown", onFirstInteraction);
+      };
+    };
+
     const scheduleStart = () => {
+      interactionCleanup = subscribeForInteraction();
+
       if (browserWindow.requestIdleCallback) {
         idleHandle = browserWindow.requestIdleCallback(() => {
-          void startAnimations().catch(console.error);
-        }, { timeout: 180 });
+          startFromInteraction();
+        }, { timeout: prefersTouchScroll ? 2200 : 900 });
         return;
       }
 
       timeoutHandle = window.setTimeout(() => {
-        void startAnimations().catch(console.error);
-      }, 40);
+        startFromInteraction();
+      }, prefersTouchScroll ? 1200 : 400);
     };
 
     scheduleStart();
 
     return () => {
       disposed = true;
+      interactionCleanup?.();
       if (idleHandle !== undefined && browserWindow.cancelIdleCallback) {
         browserWindow.cancelIdleCallback(idleHandle);
       }

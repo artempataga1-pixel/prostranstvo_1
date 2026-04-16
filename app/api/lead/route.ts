@@ -1,35 +1,126 @@
+import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 
-// ── HTML Injection protection ─────────────────────────────────────────────────
+interface RateLimitState {
+  count: number;
+  resetAt: number;
+}
+
+const RATE_LIMIT = 10;
+const RATE_WINDOW_MS = 10 * 60 * 1000;
+const RATE_LIMIT_COOKIE = "lead_rl_v1";
+
 function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// ── Simple in-memory rate limiting: 3 requests per IP per 10 minutes ─────────
-const rateLimitMap = new Map<string, number[]>();
-const RATE_LIMIT = 10;
-const RATE_WINDOW_MS = 10 * 60 * 1000;
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const hits = (rateLimitMap.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
-  if (hits.length >= RATE_LIMIT) return true;
-  hits.push(now);
-  rateLimitMap.set(ip, hits);
-  return false;
+function getSigningSecret(): string {
+  return process.env.LEAD_SIGNING_SECRET ?? process.env.TELEGRAM_BOT_TOKEN ?? "local-dev-lead-secret";
 }
 
-// ── Order counter (in-memory, resets on restart — достаточно для MVP) ────────
-let orderCounter = 0;
+function signPayload(payload: string): string {
+  return createHmac("sha256", getSigningSecret()).update(payload).digest("base64url");
+}
+
+function encodeRateLimitState(state: RateLimitState): string {
+  const payload = Buffer.from(JSON.stringify(state)).toString("base64url");
+  return `${payload}.${signPayload(payload)}`;
+}
+
+function decodeRateLimitState(value?: string): RateLimitState | null {
+  if (!value) return null;
+
+  const [payload, signature] = value.split(".");
+  if (!payload || !signature) return null;
+
+  const expectedSignature = signPayload(payload);
+  const signatureBuffer = Buffer.from(signature);
+  const expectedBuffer = Buffer.from(expectedSignature);
+
+  if (signatureBuffer.length !== expectedBuffer.length) return null;
+  if (!timingSafeEqual(signatureBuffer, expectedBuffer)) return null;
+
+  try {
+    const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as Partial<RateLimitState>;
+    if (
+      typeof parsed.count !== "number" ||
+      !Number.isFinite(parsed.count) ||
+      parsed.count < 0 ||
+      typeof parsed.resetAt !== "number" ||
+      !Number.isFinite(parsed.resetAt) ||
+      parsed.resetAt <= 0
+    ) {
+      return null;
+    }
+
+    return {
+      count: Math.floor(parsed.count),
+      resetAt: Math.floor(parsed.resetAt),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function getRateLimitState(req: NextRequest): RateLimitState {
+  const now = Date.now();
+  const parsed = decodeRateLimitState(req.cookies.get(RATE_LIMIT_COOKIE)?.value);
+
+  if (!parsed || now >= parsed.resetAt) {
+    return {
+      count: 0,
+      resetAt: now + RATE_WINDOW_MS,
+    };
+  }
+
+  return parsed;
+}
+
+function incrementRateLimitState(state: RateLimitState): RateLimitState {
+  return {
+    ...state,
+    count: state.count + 1,
+  };
+}
+
+function withRateLimitCookie(response: NextResponse, state: RateLimitState): NextResponse {
+  response.cookies.set({
+    name: RATE_LIMIT_COOKIE,
+    value: encodeRateLimitState(state),
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    expires: new Date(state.resetAt),
+  });
+
+  return response;
+}
+
+function getMoscowDateParts(date: Date) {
+  const formatter = new Intl.DateTimeFormat("ru-RU", {
+    timeZone: "Europe/Moscow",
+    year: "2-digit",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  const parts = formatter.formatToParts(date);
+  const lookup = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+
+  return {
+    yy: lookup.year ?? "00",
+    mm: lookup.month ?? "00",
+    dd: lookup.day ?? "00",
+  };
+}
 
 function getOrderNumber(): string {
-  orderCounter += 1;
   const now = new Date();
-  const yy = String(now.getFullYear()).slice(2);
-  const mm = String(now.getMonth() + 1).padStart(2, "0");
-  const dd = String(now.getDate()).padStart(2, "0");
-  const seq = String(orderCounter).padStart(3, "0");
-  return `${yy}${mm}${dd}-${seq}`;
+  const { yy, mm, dd } = getMoscowDateParts(now);
+  const timestamp = Date.now();
+  const entropy = String(randomInt(100, 1000));
+  return `${yy}${mm}${dd}-${timestamp}${entropy}`;
 }
 
 function getMoscowTime(): string {
@@ -40,7 +131,6 @@ function getMoscowTime(): string {
   }) + " МСК";
 }
 
-// ── Allowed values (mirrors the frontend) ────────────────────────────────────
 const ALLOWED_MARKETPLACES = new Set([
   "Wildberries", "Ozon", "Яндекс Маркет", "AliExpress",
   "Несколько площадок", "Другое",
@@ -51,51 +141,52 @@ const ALLOWED_REVENUES = new Set([
 ]);
 
 export async function POST(req: NextRequest) {
-  // ── Origin check (CSRF protection) ───────────────────────────────────────────
   const origin = req.headers.get("origin");
   const allowedOrigin = process.env.ALLOWED_ORIGIN;
   if (origin && allowedOrigin && origin !== allowedOrigin) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // ── Rate limiting ────────────────────────────────────────────────────────────
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  if (isRateLimited(ip)) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  const currentRateLimit = getRateLimitState(req);
+  if (currentRateLimit.count >= RATE_LIMIT) {
+    return withRateLimitCookie(
+      NextResponse.json({ error: "Too many requests" }, { status: 429 }),
+      currentRateLimit,
+    );
   }
 
-  // ── Parse body ───────────────────────────────────────────────────────────────
+  const nextRateLimit = incrementRateLimitState(currentRateLimit);
+  const json = (body: Record<string, unknown>, init?: ResponseInit) =>
+    withRateLimitCookie(NextResponse.json(body, init), nextRateLimit);
+
   let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return json({ error: "Invalid JSON" }, { status: 400 });
   }
 
   const { name, phone, telegram, marketplace, revenue, task } = body;
 
-  // ── Validation ───────────────────────────────────────────────────────────────
   if (typeof name !== "string" || name.trim().length === 0 || name.length > 100)
-    return NextResponse.json({ error: "Invalid name" }, { status: 400 });
+    return json({ error: "Invalid name" }, { status: 400 });
   if (typeof phone !== "string" || !/^[\d\s\+\-\(\)]{7,20}$/.test(phone.trim()))
-    return NextResponse.json({ error: "Invalid phone" }, { status: 400 });
+    return json({ error: "Invalid phone" }, { status: 400 });
   if (telegram !== undefined && telegram !== "" && (typeof telegram !== "string" || telegram.length > 50))
-    return NextResponse.json({ error: "Invalid telegram" }, { status: 400 });
+    return json({ error: "Invalid telegram" }, { status: 400 });
   if (typeof marketplace !== "string" || !ALLOWED_MARKETPLACES.has(marketplace))
-    return NextResponse.json({ error: "Invalid marketplace" }, { status: 400 });
+    return json({ error: "Invalid marketplace" }, { status: 400 });
   if (revenue !== undefined && revenue !== "" && (typeof revenue !== "string" || !ALLOWED_REVENUES.has(revenue)))
-    return NextResponse.json({ error: "Invalid revenue" }, { status: 400 });
+    return json({ error: "Invalid revenue" }, { status: 400 });
   if (task !== undefined && task !== "" && (typeof task !== "string" || task.length > 2000))
-    return NextResponse.json({ error: "Task too long" }, { status: 400 });
+    return json({ error: "Task too long" }, { status: 400 });
 
-  // ── Telegram config ──────────────────────────────────────────────────────────
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
   if (!botToken || !chatId) {
-    return NextResponse.json({ error: "Bot not configured" }, { status: 500 });
+    return json({ error: "Bot not configured" }, { status: 500 });
   }
 
-  // ── Build message ────────────────────────────────────────────────────────────
   const orderNum = getOrderNumber();
   const time = getMoscowTime();
 
@@ -111,7 +202,6 @@ export async function POST(req: NextRequest) {
     `📝 <b>Задача:</b> ${task ? esc(task as string) : "—"}`,
   ].join("\n");
 
-  // ── Send ─────────────────────────────────────────────────────────────────────
   let res: Response;
   try {
     res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -121,13 +211,13 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     console.error("[lead] Telegram fetch error:", err);
-    return NextResponse.json({ error: "Ошибка отправки" }, { status: 502 });
+    return json({ error: "Ошибка отправки" }, { status: 502 });
   }
 
   if (!res.ok) {
     console.error("[lead] Telegram API error:", res.status, res.statusText);
-    return NextResponse.json({ error: "Ошибка отправки" }, { status: 502 });
+    return json({ error: "Ошибка отправки" }, { status: 502 });
   }
 
-  return NextResponse.json({ ok: true, orderNum });
+  return json({ ok: true, orderNum });
 }

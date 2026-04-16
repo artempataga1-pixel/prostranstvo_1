@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import RoutePrefetch from "./components/RoutePrefetch";
 import { ScrollAnimationsOptimized } from "./components/ScrollAnimationsOptimized";
 
 export const metadata: Metadata = {
@@ -26,12 +25,6 @@ export default function RootLayout({
     <html lang="ru" data-scroll-behavior="smooth">
       <body>
         {children}
-        <RoutePrefetch
-          routes={["/form"]}
-          delayMs={1200}
-          batchSize={1}
-          batchDelayMs={0}
-        />
         <ScrollAnimationsOptimized />
       </body>
     </html>
