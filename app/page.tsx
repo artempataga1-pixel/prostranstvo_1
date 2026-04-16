@@ -462,6 +462,7 @@ function GrowthModelSection() {
     >
       {/* Teal sphere — Figma: Ellipse 3, 2756×2756 at left:-395 top:-1055 */}
       <div
+        className="growth-bg-blob"
         style={{
           position: "absolute",
           width: "143.5vw",

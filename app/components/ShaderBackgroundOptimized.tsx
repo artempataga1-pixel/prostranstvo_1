@@ -64,6 +64,10 @@ export default function ShaderBackgroundOptimized() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // На мобильных устройствах шейдер слишком тяжёлый для GPU —
+    // hero выглядит одинаково за счёт bg.png + sphere.svg
+    if (window.innerWidth < 768) return;
+
     const gl = canvas.getContext("webgl2");
     if (!gl) return;
 

@@ -138,7 +138,8 @@ export default function DataCrystal3D() {
       ring3.rotation.y = Math.PI / 6;
 
       // — Orbiting particles on ring path —
-      const ORBIT_COUNT = 160;
+      const isMobile = window.innerWidth < 768;
+      const ORBIT_COUNT = isMobile ? 60 : 160;
       const orbitPos = new Float32Array(ORBIT_COUNT * 3);
       const orbitPhase = new Float32Array(ORBIT_COUNT);
       for (let i = 0; i < ORBIT_COUNT; i++) {
@@ -165,7 +166,7 @@ export default function DataCrystal3D() {
       const orbitPoints = new THREE.Points(orbitGeo, matOrbit);
 
       // — Scattered background particles —
-      const BG_COUNT = 280;
+      const BG_COUNT = isMobile ? 80 : 280;
       const bgPos = new Float32Array(BG_COUNT * 3);
       for (let i = 0; i < BG_COUNT; i++) {
         const r = 2.2 + Math.random() * 1.8;

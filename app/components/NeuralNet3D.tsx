@@ -122,7 +122,7 @@ export default function NeuralNet3D() {
       root.add(ring);
 
       // Ambient particles
-      const pCount = 50;
+      const pCount = window.innerWidth < 768 ? 20 : 50;
       const pPos = new Float32Array(pCount * 3);
       for (let i = 0; i < pCount; i++) {
         pPos[i * 3]     = (Math.random() - 0.5) * 7;

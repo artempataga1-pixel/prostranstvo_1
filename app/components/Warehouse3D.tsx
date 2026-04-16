@@ -131,7 +131,7 @@ export default function Warehouse3D() {
       root.add(scanLine);
 
       // ── Floating particles ────────────────────────────────────────────────────
-      const NUM_P = 60;
+      const NUM_P = window.innerWidth < 768 ? 20 : 60;
       const pPos = new Float32Array(NUM_P * 3);
       const pVel = new Float32Array(NUM_P * 3);
       for (let i = 0; i < NUM_P; i++) {

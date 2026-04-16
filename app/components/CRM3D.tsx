@@ -154,7 +154,7 @@ export default function CRM3D() {
       }
 
       // ── Floating particles ────────────────────────────────────────────────────
-      const NUM_PART = 55;
+      const NUM_PART = window.innerWidth < 768 ? 20 : 55;
       const partPositions = new Float32Array(NUM_PART * 3);
       const partSpeeds = new Float32Array(NUM_PART * 3);
       for (let i = 0; i < NUM_PART; i++) {
