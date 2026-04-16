@@ -1011,7 +1011,7 @@ function ServicesPodborSection() {
           </div>
 
           {/* Infinity/logo mark — animated */}
-          <div style={{ position: "absolute", left: 0, top: "20.07%", width: "28.21%", height: "79.95%", pointerEvents: "none" }}>
+          <div style={{ position: "absolute", left: 0, top: "23.8%", width: "23.4%", height: "66.3%", pointerEvents: "none" }}>
               <InfinityMark />
           </div>
         </div>
@@ -1104,11 +1104,13 @@ function ServicesPodborSection() {
       <div
         style={{
           position: "absolute",
-          left: "calc(75% + 3.07vw)",
+          right: "3.125vw",
           top: "clamp(30px, 5.56vh, 60px)",
           display: "flex",
           alignItems: "center",
+          maxWidth: "calc(100% - 6.25vw)",
           padding: "clamp(8px, 1.11vh, 12px) clamp(10px, 0.83vw, 16px)",
+          boxSizing: "border-box",
           borderRadius: "300px",
           background: "rgba(69,69,69,0.3)",
           backdropFilter: "blur(15px)",
