@@ -1189,3 +1189,14 @@ html.lenis, html.lenis body {
     white-space: normal !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════
+   Section animation pause — останавливаем CSS-анимации
+   в секциях, которые сейчас вне viewport.
+   Класс .offscreen добавляется через SectionAnimationPause.tsx
+   ══════════════════════════════════════════════════════ */
+section.offscreen *,
+section.offscreen *::before,
+section.offscreen *::after {
+  animation-play-state: paused !important;
+}

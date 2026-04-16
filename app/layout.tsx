@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import RoutePrefetch from "./components/RoutePrefetch";
 import { ScrollAnimationsOptimized } from "./components/ScrollAnimationsOptimized";
+import SectionAnimationPause from "./components/SectionAnimationPause";
 
 export const metadata: Metadata = {
   title: "PROстранство — Получить разбор",
@@ -24,6 +25,7 @@ export default function RootLayout({
           batchDelayMs={0}
         />
         <ScrollAnimationsOptimized />
+        <SectionAnimationPause />
       </body>
     </html>
   );
