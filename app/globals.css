@@ -228,10 +228,11 @@ html.lenis, html.lenis body {
     -webkit-backdrop-filter: none !important;
   }
 
-  /* filter:blur(50px) на элементе 143vw×143vw переполняет GPU →
-     уменьшаем до 20px, на маленьком экране визуально идентично */
+  /* filter:blur на элементе 143vw×143vw переполняет GPU-память iOS →
+     убираем полностью, фон секции #0ABAB5 и так бирюзовый */
   .growth-bg-blob {
-    filter: blur(20px) !important;
+    filter: none !important;
+    box-shadow: none !important;
   }
 
   /* ShaderBackground отключён на мобильном в JS (window.innerWidth < 768) */
