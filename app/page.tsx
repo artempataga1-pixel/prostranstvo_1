@@ -137,7 +137,6 @@ function HeroSection() {
           letterSpacing: "clamp(-8px, -0.45vw, -2px)",
           color: "#ffffff",
           textAlign: "center",
-          willChange: "transform",
         }}
       >
         PROстранство

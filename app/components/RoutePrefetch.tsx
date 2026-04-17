@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 interface RoutePrefetchProps {
@@ -17,9 +17,13 @@ export default function RoutePrefetch({
   batchDelayMs = 120,
 }: RoutePrefetchProps) {
   const router = useRouter();
+  // Стабилизируем routes: сериализуем в строку чтобы dep-массив не видел новый массив каждый рендер
+  const routesKey = routes.join(",");
+  const routesRef = useRef(routes);
+  routesRef.current = routes;
 
   useEffect(() => {
-    const uniqueRoutes = Array.from(new Set(routes)).filter(Boolean);
+    const uniqueRoutes = Array.from(new Set(routesRef.current)).filter(Boolean);
     if (uniqueRoutes.length === 0) return;
 
     const browserWindow = window as Window & {
@@ -95,7 +99,8 @@ export default function RoutePrefetch({
         window.clearTimeout(timeoutHandle);
       }
     };
-  }, [batchDelayMs, batchSize, delayMs, router, routes]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [batchDelayMs, batchSize, delayMs, router, routesKey]);
 
   return null;
 }

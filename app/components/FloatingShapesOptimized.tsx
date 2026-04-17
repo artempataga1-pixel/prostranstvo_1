@@ -24,7 +24,7 @@ function ElegantShape({
       className={className}
       style={{
         position: "absolute",
-        willChange: "transform, opacity",
+        willChange: shouldFloat ? "transform" : "auto",
         animation: `hero-shape-enter 2.4s cubic-bezier(0.23, 0.86, 0.39, 0.96) ${delay}s both`,
         ["--shape-rotate-from" as string]: `${rotate - 15}deg`,
         ["--shape-rotate-to" as string]: `${rotate}deg`,
