@@ -497,6 +497,8 @@ function ServicesExternalSection() {
       <p style={{ position: "absolute", left: "3.125vw", top: "clamp(560px, 79.54vh, 859px)", width: "clamp(260px, 54.01vw, 1037px)", fontFamily: font, fontWeight: 400, fontSize: "clamp(30px, 5.208vw, 100px)", lineHeight: 0.9, letterSpacing: "-0.035em", color: "#ffffff", margin: 0, zIndex: 3 }}>
         Выход за пределы маркетплейсов
       </p>
+      {/* Переход → ServicesManagement #D400AA */}
+      <div aria-hidden="true" style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "clamp(60px,8vw,100px)", background: "linear-gradient(to bottom,transparent,#D400AA)", pointerEvents: "none", zIndex: 5 }} />
     </section>
   );
 }
@@ -570,6 +572,8 @@ function ServicesAiSection() {
         <span style={{ color: "#0bbab5" }}>Автоматизация</span>
         {" \nчерез искусственный интеллект"}
       </p>
+      {/* Переход → ServicesAccounting #ffffff */}
+      <div aria-hidden="true" style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "clamp(60px,8vw,100px)", background: "linear-gradient(to bottom,transparent,#ffffff)", pointerEvents: "none", zIndex: 5 }} />
     </section>
   );
 }
@@ -639,6 +643,8 @@ function ServicesAccountingSection() {
           </div>
         </div>
       </div>
+      {/* Переход → ServicesExternal #0ABAB5 */}
+      <div aria-hidden="true" style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "clamp(60px,8vw,100px)", background: "linear-gradient(to bottom,transparent,#0ABAB5)", pointerEvents: "none", zIndex: 5 }} />
     </section>
   );
 }
@@ -874,6 +880,8 @@ function ServicesManagementSection() {
           <p style={{ margin: 0 }}>{"• Команда: менеджер, аналитик, дизайнер"}</p>
         </div>
       </div>
+      {/* Переход → ServicesAi #0d1f1f */}
+      <div aria-hidden="true" style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "clamp(60px,8vw,100px)", background: "linear-gradient(to bottom,transparent,#0d1f1f)", pointerEvents: "none", zIndex: 5 }} />
     </section>
   );
 }
@@ -1133,6 +1141,8 @@ function ServicesPodborSection() {
           подбор новинок
         </p>
       </div>
+      {/* Переход → ServicesTeam (тёмный старт rgb(13,31,31)) */}
+      <div aria-hidden="true" style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "clamp(60px,8vw,100px)", background: "linear-gradient(to bottom,transparent,rgb(13,31,31))", pointerEvents: "none", zIndex: 5 }} />
     </section>
   );
 }
@@ -1305,6 +1315,8 @@ function ServicesTeamSection() {
           <Img alt="" src={TEAM_DOT2_IMG} style={{ display: "block", width: "100%", height: "100%", maxWidth: "none" }} />
         </div>
       </div>
+      {/* Переход → ServicesHrTeam #ffffff */}
+      <div aria-hidden="true" style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "clamp(60px,8vw,100px)", background: "linear-gradient(to bottom,transparent,#ffffff)", pointerEvents: "none", zIndex: 5 }} />
     </section>
   );
 }
@@ -1608,46 +1620,22 @@ function ServicesHrTeamSection() {
       >
         Развиваем действующую команду
       </p>
+      {/* Переход → WorkWithUs #070f0c */}
+      <div aria-hidden="true" style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "clamp(60px,8vw,100px)", background: "linear-gradient(to bottom,transparent,#070f0c)", pointerEvents: "none", zIndex: 5 }} />
     </section>
   );
 }
-function GradDiv({ from, to }: { from: string; to: string }) {
-  return (
-    <div
-      aria-hidden="true"
-      style={{
-        width: "100%",
-        height: "clamp(48px, 6vw, 80px)",
-        background: `linear-gradient(to bottom, ${from}, ${to})`,
-        pointerEvents: "none",
-      }}
-    />
-  );
-}
-
 export default function HomeServicesSectionsClient() {
   return (
     <>
       <FadeIn><ServicesSection /></FadeIn>
       <FadeIn><ServicesPodborSection /></FadeIn>
       <FadeIn><ServicesAuditSection /></FadeIn>
-      {/* AuditSection заканчивается тил rgb(56,133,133) → ManagementSection #D400AA */}
-      <GradDiv from="rgb(56,133,133)" to="#D400AA" />
       <FadeIn><ServicesManagementSection /></FadeIn>
-      {/* ManagementSection #D400AA → AiSection #0d1f1f */}
-      <GradDiv from="#D400AA" to="#0d1f1f" />
       <FadeIn><ServicesAiSection /></FadeIn>
-      {/* AiSection #0d1f1f → AccountingSection #ffffff */}
-      <GradDiv from="#0d1f1f" to="#ffffff" />
       <FadeIn><ServicesAccountingSection /></FadeIn>
-      {/* AccountingSection #ffffff → ExternalSection #0ABAB5 */}
-      <GradDiv from="#ffffff" to="#0ABAB5" />
       <FadeIn><ServicesExternalSection /></FadeIn>
-      {/* ExternalSection #0ABAB5 → TeamSection (тёмный старт) */}
-      <GradDiv from="#0ABAB5" to="rgb(13,31,31)" />
       <FadeIn><ServicesTeamSection /></FadeIn>
-      {/* TeamSection заканчивается тил rgb(56,133,133) → HrTeamSection #ffffff */}
-      <GradDiv from="rgb(56,133,133)" to="#ffffff" />
       <FadeIn><ServicesHrTeamSection /></FadeIn>
     </>
   );
