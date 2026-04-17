@@ -1611,17 +1611,43 @@ function ServicesHrTeamSection() {
     </section>
   );
 }
+function GradDiv({ from, to }: { from: string; to: string }) {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        width: "100%",
+        height: "clamp(48px, 6vw, 80px)",
+        background: `linear-gradient(to bottom, ${from}, ${to})`,
+        pointerEvents: "none",
+      }}
+    />
+  );
+}
+
 export default function HomeServicesSectionsClient() {
   return (
     <>
       <FadeIn><ServicesSection /></FadeIn>
       <FadeIn><ServicesPodborSection /></FadeIn>
       <FadeIn><ServicesAuditSection /></FadeIn>
+      {/* AuditSection заканчивается тил rgb(56,133,133) → ManagementSection #D400AA */}
+      <GradDiv from="rgb(56,133,133)" to="#D400AA" />
       <FadeIn><ServicesManagementSection /></FadeIn>
+      {/* ManagementSection #D400AA → AiSection #0d1f1f */}
+      <GradDiv from="#D400AA" to="#0d1f1f" />
       <FadeIn><ServicesAiSection /></FadeIn>
+      {/* AiSection #0d1f1f → AccountingSection #ffffff */}
+      <GradDiv from="#0d1f1f" to="#ffffff" />
       <FadeIn><ServicesAccountingSection /></FadeIn>
+      {/* AccountingSection #ffffff → ExternalSection #0ABAB5 */}
+      <GradDiv from="#ffffff" to="#0ABAB5" />
       <FadeIn><ServicesExternalSection /></FadeIn>
+      {/* ExternalSection #0ABAB5 → TeamSection (тёмный старт) */}
+      <GradDiv from="#0ABAB5" to="rgb(13,31,31)" />
       <FadeIn><ServicesTeamSection /></FadeIn>
+      {/* TeamSection заканчивается тил rgb(56,133,133) → HrTeamSection #ffffff */}
+      <GradDiv from="rgb(56,133,133)" to="#ffffff" />
       <FadeIn><ServicesHrTeamSection /></FadeIn>
     </>
   );

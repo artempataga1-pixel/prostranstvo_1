@@ -4712,17 +4712,40 @@ void [
   CaseSeasonalSection,
 ];
 
+/** Градиентный переходник между секциями с разными фонами */
+function SectionDivider({ from, to, height = "clamp(48px, 6vw, 80px)" }: { from: string; to: string; height?: string }) {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        width: "100%",
+        height,
+        background: `linear-gradient(to bottom, ${from}, ${to})`,
+        display: "block",
+        pointerEvents: "none",
+      }}
+    />
+  );
+}
+
 export default function Page() {
   return (
     <main style={{ position: "relative", width: "100%", backgroundColor: "#071518" }}>
       {/* Hero — без анимации, сразу виден */}
       <HeroSection />
 
+      {/* #071518 → #0ABAB5 */}
+      <SectionDivider from="#071518" to="#0ABAB5" />
       <FadeIn><GrowthModelSection /></FadeIn>
+      {/* #0ABAB5 → #071518 */}
+      <SectionDivider from="#0ABAB5" to="#071518" />
+
       <FadeIn><WhyChooseUsSection /></FadeIn>
 
       <FadeIn><OrbitalSection /></FadeIn>
       <DeferredServicesSections />
+      {/* Services заканчивается #ffffff → WorkWithUs #070f0c */}
+      <SectionDivider from="#ffffff" to="#070f0c" />
       <FadeIn><WorkWithUsSection /></FadeIn>
       <FadeIn><FaqSection /></FadeIn>
       <FadeIn><DeferredContactsSection /></FadeIn>
